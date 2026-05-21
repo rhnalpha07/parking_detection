@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Parking Space Detection System - Deteksi slot parkir kosong dan terisi secara otomatis menggunakan AI">
-    <title>ParkVision — Smart Parking Detection</title>
+    <meta name="description"
+        content="ParkVision - intelligent parking detection interface for image and video analysis.">
+    <title>ParkVision - Intelligent Parking System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Orbitron:wght@500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
+    <div class="ambient-field" aria-hidden="true">
+        <span class="light light-a"></span>
+        <span class="light light-b"></span>
+        <span class="light light-c"></span>
+    </div>
 
-    <!-- Background animated particles -->
-    <div class="bg-particles" id="bgParticles"></div>
-
-    <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="nav-brand">
-                <div class="brand-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="1" y="3" width="15" height="13" rx="2"/>
-                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                        <circle cx="5.5" cy="18.5" r="2.5"/>
-                        <circle cx="18.5" cy="18.5" r="2.5"/>
+            <a class="nav-brand" href="#top" aria-label="ParkVision home">
+                <span class="brand-icon">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="8" rx="2" />
+                        <path d="M6 11V8.8A3.8 3.8 0 0 1 9.8 5h4.4A3.8 3.8 0 0 1 18 8.8V11" />
+                        <path d="M7 15h.01M17 15h.01" />
                     </svg>
-                </div>
-                <span class="brand-text">Park<span class="brand-accent">Vision</span></span>
+                </span>
+                <span class="brand-text">Park<span>Vision</span></span>
+            </a>
+            <div class="nav-links" aria-label="Primary navigation">
+                <a href="#system">System</a>
+                <a href="#uploadPanel">Detect</a>
+                <a href="#resultsSection">Results</a>
             </div>
             <div class="nav-status" id="navStatus">
                 <span class="status-dot"></span>
@@ -36,219 +47,344 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-container">
-            <div class="hero-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                <span>AI-Powered Detection</span>
+    <header class="hero-section" id="top">
+        <div class="hero-grid-floor" aria-hidden="true"></div>
+        <div class="hero-city" id="heroCity" aria-hidden="true">
+            <div class="city-layer city-back">
+                <span class="tower tower-a"></span>
+                <span class="tower tower-b"></span>
+                <span class="tower tower-c"></span>
+                <span class="tower tower-d"></span>
+                <span class="tower tower-e"></span>
             </div>
-            <h1 class="hero-title">
-                Smart <span class="gradient-text">Parking</span> Detection
-            </h1>
-            <p class="hero-subtitle">
-                Upload gambar atau video area parkir dan biarkan AI menganalisis slot yang kosong dan terisi secara otomatis dengan teknologi computer vision.
-            </p>
+            <div class="parking-orbit">
+                <span class="orbit-shadow"></span>
+                <span class="support support-a"></span>
+                <span class="support support-b"></span>
+                <span class="support support-c"></span>
+                <span class="support support-d"></span>
+                <span class="ramp ramp-left"></span>
+                <span class="ramp ramp-right"></span>
+                <div class="deck deck-upper">
+                    <span class="slot empty"></span>
+                    <span class="slot occupied"></span>
+                    <span class="slot empty"></span>
+                    <span class="slot occupied"></span>
+                    <span class="slot empty"></span>
+                    <span class="car car-a"></span>
+                    <span class="car car-b"></span>
+                    <span class="scanline"></span>
+                </div>
+                <div class="deck deck-lower">
+                    <span class="slot occupied"></span>
+                    <span class="slot empty"></span>
+                    <span class="slot empty"></span>
+                    <span class="slot occupied"></span>
+                    <span class="slot empty"></span>
+                    <span class="car car-c"></span>
+                    <span class="car car-d"></span>
+                    <span class="scanline scanline-delay"></span>
+                </div>
+                <div class="holo-panel holo-left">
+                    <span class="holo-label">EMPTY</span>
+                    <strong>03</strong>
+                </div>
+                <div class="holo-panel holo-right">
+                    <span class="holo-label">OCC</span>
+                    <strong>02</strong>
+                </div>
+            </div>
         </div>
-    </section>
 
-    <!-- Main Content -->
+        <div class="hero-content">
+            <div class="hero-kicker">
+                <span class="kicker-mark"></span>
+                Intelligent parking infrastructure
+            </div>
+            <h1 class="hero-title">Vision for Smart Parking Control</h1>
+            <p class="hero-subtitle">
+                Analisis gambar dan video parkiran dengan interface gelap, presisi visual, dan ringkasan okupansi yang
+                langsung bisa dibaca.
+            </p>
+            <div class="hero-actions">
+                <a class="hero-cta primary" href="#uploadPanel">
+                    <span>Start Detection</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14" />
+                        <path d="m12 5 7 7-7 7" />
+                    </svg>
+                </a>
+                <a class="hero-cta secondary" href="#system">View System</a>
+            </div>
+            <div class="hero-readout" aria-label="System highlights">
+                <div>
+                    <span class="readout-value">100MB</span>
+                    <span class="readout-label">max media</span>
+                </div>
+                <div>
+                    <span class="readout-value">YOLO</span>
+                    <span class="readout-label">local model</span>
+                </div>
+                <div>
+                    <span class="readout-value">IMG/VID</span>
+                    <span class="readout-label">analysis</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <main class="main-content">
-        <div class="content-grid">
-            <!-- Upload Section -->
+        <section class="system-section" id="system" aria-labelledby="systemTitle">
+            <div class="section-intro">
+                <span class="section-eyebrow">Operating layer</span>
+                <h2 id="systemTitle">A precise interface for parking intelligence.</h2>
+                <p>Designed for calm monitoring, fast media intake, and clear occupancy decisions in a dense urban
+                    environment.</p>
+            </div>
+            <div class="feature-grid">
+                <article class="feature-panel">
+                    <span class="feature-index">01</span>
+                    <h3>Media Intake</h3>
+                    <p>Upload gambar atau video dari area parkir untuk dianalisis oleh backend Flask.</p>
+                </article>
+                <article class="feature-panel">
+                    <span class="feature-index">02</span>
+                    <h3>Slot Classification</h3>
+                    <p>Model lokal mengelompokkan slot sebagai kosong atau terisi, lengkap dengan confidence.</p>
+                </article>
+                <article class="feature-panel">
+                    <span class="feature-index">03</span>
+                    <h3>Occupancy Readout</h3>
+                    <p>Hasil ditampilkan sebagai statistik, visual anotasi, tabel slot, dan timeline video.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="upload-shell" id="uploadPanel" aria-labelledby="uploadTitle">
+            <div class="upload-copy">
+                <span class="section-eyebrow">Detection bay</span>
+                <h2 id="uploadTitle">Drop parking media into the analysis chamber.</h2>
+                <p>Gunakan JPG, PNG, MP4, AVI, MOV, atau WEBM. File sementara akan dihapus setelah proses selesai.</p>
+            </div>
+
             <div class="upload-section">
                 <div class="section-card glass-card">
                     <div class="section-header">
                         <div class="section-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
                         </div>
-                        <h2 class="section-title">Upload Gambar/Video</h2>
+                        <div>
+                            <h2 class="section-title">Upload Gambar/Video</h2>
+                            <p class="section-caption">Parking media input</p>
+                        </div>
                     </div>
 
-                    <!-- Drop Zone -->
                     <div class="drop-zone" id="dropZone">
                         <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.mp4,.avi,.mov,.webm" hidden>
                         <div class="drop-zone-content" id="dropZoneContent">
                             <div class="drop-icon">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
-                                    <path d="M12 12v9"/>
-                                    <path d="m16 16-4-4-4 4"/>
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                                    <path d="M12 12v9" />
+                                    <path d="m16 16-4-4-4 4" />
                                 </svg>
                             </div>
-                            <p class="drop-text">Drag & drop gambar/video parkiran di sini</p>
-                            <p class="drop-subtext">atau klik untuk memilih file</p>
+                            <p class="drop-text">Drag & drop media parkiran di sini</p>
+                            <p class="drop-subtext">atau klik panel untuk memilih file</p>
                             <div class="drop-formats">
                                 <span class="format-badge">JPG/PNG</span>
                                 <span class="format-badge">MP4/AVI</span>
                                 <span class="format-badge">WEBM</span>
-                                <span class="format-separator">•</span>
                                 <span class="format-size">Maks 100MB</span>
                             </div>
                         </div>
-                        <!-- Preview -->
                         <div class="preview-container" id="previewContainer" style="display:none;">
                             <img id="previewImage" alt="Preview gambar parkiran" style="display:none;">
-                            <video id="previewVideo" autoplay loop muted style="display:none; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);"></video>
-                            <button class="preview-remove" id="removePreview" title="Hapus file">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <video id="previewVideo" autoplay loop muted style="display:none;"></video>
+                            <button class="preview-remove" id="removePreview" title="Hapus file"
+                                aria-label="Hapus file">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
                             </button>
                             <div class="preview-info" id="previewInfo"></div>
                         </div>
                     </div>
 
-                    <!-- Action Button -->
                     <button class="detect-btn" id="detectBtn" disabled>
                         <span class="btn-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.3-4.3"/>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.3-4.3" />
                             </svg>
                         </span>
                         <span class="btn-text">Deteksi Parkiran</span>
                         <span class="btn-loader" id="btnLoader" style="display:none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                            </svg>
                         </span>
                     </button>
                 </div>
             </div>
+        </section>
 
-            <!-- Results Section -->
-            <div class="results-section" id="resultsSection" style="display:none;">
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card glass-card stat-total">
-                        <div class="stat-icon-wrap">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="statTotal">0</span>
-                            <span class="stat-label">Total Slot</span>
-                        </div>
+        <section class="results-section" id="resultsSection" style="display:none;" aria-label="Hasil deteksi parkiran">
+            <div class="stats-grid">
+                <div class="stat-card glass-card stat-total">
+                    <div class="stat-icon-wrap">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg>
                     </div>
-                    <div class="stat-card glass-card stat-empty">
-                        <div class="stat-icon-wrap">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="statEmpty">0</span>
-                            <span class="stat-label">Slot Kosong</span>
-                        </div>
-                    </div>
-                    <div class="stat-card glass-card stat-occupied">
-                        <div class="stat-icon-wrap">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="statOccupied">0</span>
-                            <span class="stat-label">Slot Terisi</span>
-                        </div>
-                    </div>
-                    <div class="stat-card glass-card stat-rate">
-                        <div class="stat-icon-wrap">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="statRate">0%</span>
-                            <span class="stat-label">Tingkat Okupansi</span>
-                        </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statTotal">0</span>
+                        <span class="stat-label">Total Slot</span>
                     </div>
                 </div>
-
-                <!-- Occupancy Bar -->
-                <div class="occupancy-card glass-card">
-                    <div class="occupancy-header">
-                        <h3>Tingkat Okupansi</h3>
-                        <span class="occupancy-percent" id="occupancyPercent">0%</span>
+                <div class="stat-card glass-card stat-empty">
+                    <div class="stat-icon-wrap">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
                     </div>
-                    <div class="occupancy-bar-track">
-                        <div class="occupancy-bar-fill" id="occupancyBarFill" style="width: 0%"></div>
-                    </div>
-                    <div class="occupancy-legend">
-                        <div class="legend-item">
-                            <span class="legend-dot legend-empty"></span>
-                            <span>Kosong (<span id="legendEmpty">0</span>)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot legend-occupied"></span>
-                            <span>Terisi (<span id="legendOccupied">0</span>)</span>
-                        </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statEmpty">0</span>
+                        <span class="stat-label">Slot Kosong</span>
                     </div>
                 </div>
-
-                <!-- Result Image -->
-                <div class="result-image-card glass-card">
-                    <div class="section-header">
-                        <div class="section-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                <circle cx="9" cy="9" r="2"/>
-                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                            </svg>
-                        </div>
-                        <h2 class="section-title">Hasil Deteksi</h2>
+                <div class="stat-card glass-card stat-occupied">
+                    <div class="stat-icon-wrap">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
                     </div>
-                    <div class="result-image-wrapper" id="resultImageWrapper">
-                        <img id="resultImage" alt="Hasil deteksi parkiran" style="display:none;">
-                        <video id="resultVideo" autoplay loop muted controls style="display:none; width:100%; border-radius: var(--radius-md);"></video>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statOccupied">0</span>
+                        <span class="stat-label">Slot Terisi</span>
                     </div>
                 </div>
-
-                <!-- Slot Details Table -->
-                <div class="slots-card glass-card">
-                    <div class="section-header">
-                        <div class="section-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 3v18"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 8h20"/>
-                            </svg>
-                        </div>
-                        <h2 class="section-title">Detail Slot</h2>
-                        <div class="slot-filter">
-                            <button class="filter-btn active" data-filter="all" id="filterAll">Semua</button>
-                            <button class="filter-btn" data-filter="empty" id="filterEmpty">Kosong</button>
-                            <button class="filter-btn" data-filter="occupied" id="filterOccupied">Terisi</button>
-                        </div>
+                <div class="stat-card glass-card stat-rate">
+                    <div class="stat-icon-wrap">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
                     </div>
-                    <div class="slots-table-wrapper">
-                        <table class="slots-table" id="slotsTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Status</th>
-                                    <th>Label</th>
-                                    <th>Confidence</th>
-                                    <th>Posisi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="slotsTableBody">
-                            </tbody>
-                        </table>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statRate">0%</span>
+                        <span class="stat-label">Tingkat Okupansi</span>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="occupancy-card glass-card">
+                <div class="occupancy-header">
+                    <h3>Tingkat Okupansi</h3>
+                    <span class="occupancy-percent" id="occupancyPercent">0%</span>
+                </div>
+                <div class="occupancy-bar-track">
+                    <div class="occupancy-bar-fill" id="occupancyBarFill" style="width: 0%"></div>
+                </div>
+                <div class="occupancy-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot legend-empty"></span>
+                        <span>Kosong (<span id="legendEmpty">0</span>)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot legend-occupied"></span>
+                        <span>Terisi (<span id="legendOccupied">0</span>)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-image-card glass-card">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <circle cx="9" cy="9" r="2" />
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                        </svg>
+                    </div>
+                    <h2 class="section-title">Hasil Deteksi</h2>
+                </div>
+                <div class="result-image-wrapper" id="resultImageWrapper">
+                    <img id="resultImage" alt="Hasil deteksi parkiran" style="display:none;">
+                    <video id="resultVideo" autoplay loop muted controls style="display:none;"></video>
+                </div>
+            </div>
+
+            <div class="slots-card glass-card">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v18" />
+                            <rect x="4" y="8" width="16" height="12" rx="2" />
+                            <path d="M2 8h20" />
+                        </svg>
+                    </div>
+                    <h2 class="section-title">Detail Slot</h2>
+                    <div class="slot-filter">
+                        <button class="filter-btn active" data-filter="all" id="filterAll">Semua</button>
+                        <button class="filter-btn" data-filter="empty" id="filterEmpty">Kosong</button>
+                        <button class="filter-btn" data-filter="occupied" id="filterOccupied">Terisi</button>
+                    </div>
+                </div>
+                <div class="slots-table-wrapper">
+                    <table class="slots-table" id="slotsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Status</th>
+                                <th>Label</th>
+                                <th>Confidence</th>
+                                <th>Posisi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slotsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Image Lightbox -->
     <div class="result-lightbox" id="resultLightbox">
-        <img id="lightboxImage" alt="Hasil deteksi (full)" style="display:none;">
-        <video id="lightboxVideo" autoplay loop muted controls style="display:none; max-width: 90%; max-height: 90vh;"></video>
+        <img id="lightboxImage" alt="Hasil deteksi full" style="display:none;">
+        <video id="lightboxVideo" autoplay loop muted controls style="display:none;"></video>
         <span class="lightbox-hint">Klik di mana saja untuk menutup</span>
     </div>
 
-    <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay" style="display:none;">
         <div class="loading-content glass-card">
             <div class="loading-spinner">
                 <div class="spinner-ring"></div>
                 <div class="spinner-icon">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.3-4.3"/>
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.3-4.3" />
                     </svg>
                 </div>
             </div>
@@ -260,16 +396,16 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <p>© 2026 ParkVision — Powered by AI & Roboflow</p>
+            <span>ParkVision</span>
+            <p>Local YOLO parking analysis interface.</p>
         </div>
     </footer>
 
     <script src="/static/js/app.js"></script>
 </body>
+
 </html>

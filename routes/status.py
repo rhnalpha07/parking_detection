@@ -27,6 +27,6 @@ def index():
     return success_response({
         "endpoints": [
             {"method": "GET",  "path": "/api/health",  "desc": "Cek status API"},
-            {"method": "POST", "path": "/api/detect",  "desc": "Deteksi parkiran dari gambar"},
+            {"method": "POST", "path": "/api/detect",  "desc": "Deteksi parkiran dari gambar atau video"},
         ]
     }, "Selamat datang di Parking Detection API.")

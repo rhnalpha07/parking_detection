@@ -6,7 +6,7 @@ from ultralytics import YOLO
 
 # Load model secara global
 MODEL_PATH = "best.pt"
-model = YOLO(MODEL_PATH)
+model = YOLO(MODEL_PATH, task='detect')
 
 def analyze_parking(file_path: str, save_result: bool = True) -> dict:
     ext = file_path.rsplit(".", 1)[-1].lower()

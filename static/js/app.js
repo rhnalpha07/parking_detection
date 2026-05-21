@@ -1,12 +1,12 @@
-// ========== ParkVision - Smart Parking Detection ==========
 const API_BASE = window.location.origin;
+
 let selectedFile = null;
 let slotsData = [];
 let videoTimeline = null;
 let lastRenderedTime = -1;
 
-// ── DOM Elements ──
-const $ = (s) => document.querySelector(s);
+const $ = (selector) => document.querySelector(selector);
+
 const dropZone = $("#dropZone");
 const fileInput = $("#fileInput");
 const previewContainer = $("#previewContainer");
@@ -21,108 +21,185 @@ const resultsSection = $("#resultsSection");
 const loadingOverlay = $("#loadingOverlay");
 const toastContainer = $("#toastContainer");
 
-// ── Init ──
 document.addEventListener("DOMContentLoaded", () => {
+  initScrollReveal();
+  initLandingMotion();
   checkApiHealth();
   setupDropZone();
   setupDetectButton();
   setupFilters();
+  setupLightbox();
+  setupVideoTimelineSync();
 });
 
-// ── API Health Check ──
+function initScrollReveal() {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const revealItems = document.querySelectorAll(".section-intro, .upload-copy, .section-card");
+  const featurePanels = document.querySelectorAll(".feature-panel");
+
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    revealItems.forEach((item) => item.classList.add("is-visible"));
+    featurePanels.forEach((panel) => panel.classList.add("is-visible"));
+    return;
+  }
+
+  // Standard reveal for non-card elements
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.18, rootMargin: "0px 0px -8% 0px" });
+
+  revealItems.forEach((item, index) => {
+    item.style.animationDelay = `${Math.min(index * 120, 420)}ms`;
+    observer.observe(item);
+  });
+
+  // Staggered spring-in for feature panels
+  const STAGGER_MS = 140;
+  const featureObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      featureObserver.unobserve(entry.target);
+      entry.target.classList.add("is-visible");
+    });
+  }, { threshold: 0.15, rootMargin: "0px 0px -6% 0px" });
+
+  featurePanels.forEach((panel, index) => {
+    panel.style.setProperty("--stagger-delay", `${index * STAGGER_MS}ms`);
+    featureObserver.observe(panel);
+  });
+}
+
+function initLandingMotion() {
+  const hero = $(".hero-section");
+  const city = $("#heroCity");
+  if (!hero || !city || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+
+  hero.addEventListener("pointermove", (event) => {
+    const rect = hero.getBoundingClientRect();
+    targetX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+    targetY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+  });
+
+  hero.addEventListener("pointerleave", () => {
+    targetX = 0;
+    targetY = 0;
+  });
+
+  function frame() {
+    currentX += (targetX - currentX) * 0.045;
+    currentY += (targetY - currentY) * 0.045;
+    city.style.transform = `translate3d(${currentX * 10}px, ${currentY * 7}px, 0) rotateX(${currentY * -1.2}deg) rotateY(${currentX * 1.6}deg)`;
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+}
+
 async function checkApiHealth() {
   const statusDot = $(".status-dot");
   const statusText = $(".status-text");
+
   try {
     const res = await fetch(`${API_BASE}/api/health`);
     const data = await res.json();
     if (data.status === "success") {
       statusDot.classList.add("online");
+      statusDot.classList.remove("offline");
       statusText.textContent = "API Online";
-    } else {
-      statusDot.classList.add("offline");
-      statusText.textContent = "API Error";
+      return;
     }
+    statusDot.classList.add("offline");
+    statusText.textContent = "API Error";
   } catch {
     statusDot.classList.add("offline");
     statusText.textContent = "API Offline";
   }
 }
 
-// ── Drop Zone Setup ──
 function setupDropZone() {
-  dropZone.addEventListener("click", (e) => {
-    if (e.target.closest(".preview-remove")) return;
+  dropZone.addEventListener("click", (event) => {
+    if (event.target.closest(".preview-remove")) return;
     fileInput.click();
   });
 
-  fileInput.addEventListener("change", (e) => {
-    if (e.target.files.length) handleFile(e.target.files[0]);
+  fileInput.addEventListener("change", (event) => {
+    if (event.target.files.length) handleFile(event.target.files[0]);
   });
 
-  ["dragenter", "dragover"].forEach((evt) => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
+  ["dragenter", "dragover"].forEach((name) => {
+    dropZone.addEventListener(name, (event) => {
+      event.preventDefault();
       dropZone.classList.add("drag-over");
     });
   });
 
-  ["dragleave", "drop"].forEach((evt) => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
+  ["dragleave", "drop"].forEach((name) => {
+    dropZone.addEventListener(name, (event) => {
+      event.preventDefault();
       dropZone.classList.remove("drag-over");
     });
   });
 
-  dropZone.addEventListener("drop", (e) => {
-    const files = e.dataTransfer.files;
+  dropZone.addEventListener("drop", (event) => {
+    const files = event.dataTransfer.files;
     if (files.length) handleFile(files[0]);
   });
 
-  removePreview.addEventListener("click", (e) => {
-    e.stopPropagation();
+  removePreview.addEventListener("click", (event) => {
+    event.stopPropagation();
     clearFile();
   });
 }
 
 function handleFile(file) {
-  const allowed = ["image/jpeg", "image/jpg", "image/png", "video/mp4", "video/avi", "video/quicktime", "video/x-msvideo", "video/webm"];
-  if (!allowed.includes(file.type)) {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "video/mp4",
+    "video/avi",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/webm",
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
     showToast("Format file tidak didukung. Gunakan JPG, PNG, atau Video (MP4/AVI/WEBM).", "error");
     return;
   }
+
   if (file.size > 100 * 1024 * 1024) {
     showToast("Ukuran file terlalu besar. Maksimal 100MB.", "error");
     return;
   }
 
   selectedFile = file;
+  const fileUrl = URL.createObjectURL(file);
   const isVideo = file.type.startsWith("video/");
-  
+
   if (isVideo) {
-    const fileURL = URL.createObjectURL(file);
-    previewVideo.src = fileURL;
+    previewVideo.src = fileUrl;
     previewVideo.style.display = "block";
     previewImage.style.display = "none";
-    
-    previewContainer.style.display = "block";
-    dropZoneContent.style.display = "none";
-    previewInfo.textContent = `${file.name} • ${formatSize(file.size)}`;
-    detectBtn.disabled = false;
   } else {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      previewImage.src = e.target.result;
-      previewImage.style.display = "block";
-      previewVideo.style.display = "none";
-      
-      previewContainer.style.display = "block";
-      dropZoneContent.style.display = "none";
-      previewInfo.textContent = `${file.name} • ${formatSize(file.size)}`;
-      detectBtn.disabled = false;
-    };
-    reader.readAsDataURL(file);
+    previewImage.src = fileUrl;
+    previewImage.style.display = "block";
+    previewVideo.style.display = "none";
   }
+
+  previewContainer.style.display = "block";
+  dropZoneContent.style.display = "none";
+  previewInfo.textContent = `${file.name} - ${formatSize(file.size)}`;
+  detectBtn.disabled = false;
 }
 
 function clearFile() {
@@ -131,18 +208,18 @@ function clearFile() {
   previewContainer.style.display = "none";
   previewImage.style.display = "none";
   previewVideo.style.display = "none";
-  previewVideo.src = ""; // Stop video playback
+  previewImage.src = "";
+  previewVideo.src = "";
   dropZoneContent.style.display = "flex";
   detectBtn.disabled = true;
 }
 
 function formatSize(bytes) {
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / 1048576).toFixed(1) + " MB";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
-// ── Detect Button ──
 function setupDetectButton() {
   detectBtn.addEventListener("click", async () => {
     if (!selectedFile || detectBtn.disabled) return;
@@ -151,32 +228,26 @@ function setupDetectButton() {
 }
 
 async function runDetection() {
-  // Show loading
   detectBtn.disabled = true;
   detectBtn.classList.add("loading");
   btnLoader.style.display = "inline-flex";
   loadingOverlay.style.display = "grid";
-  
-  const isVideo = selectedFile && selectedFile.type.startsWith("video/");
-  const subtitle = $(".loading-subtitle");
-  if (isVideo) {
-    subtitle.textContent = "AI sedang menganalisis video (bisa memakan waktu beberapa saat)...";
-  } else {
-    subtitle.textContent = "AI sedang mendeteksi slot parkir dari gambar...";
-  }
 
-  // Simulate progress bar
+  const isVideo = selectedFile.type.startsWith("video/");
+  $(".loading-subtitle").textContent = isVideo
+    ? "AI sedang menganalisis video. Proses ini bisa memakan waktu beberapa saat..."
+    : "AI sedang mendeteksi slot parkir dari gambar...";
+
   const progressBar = $("#loadingProgressBar");
   progressBar.style.width = "0%";
   progressBar.style.transition = "width 0.5s ease";
-  
+
   let progress = 0;
   const progressInterval = setInterval(() => {
-    // Slower progress for video
-    const increment = isVideo ? (Math.random() * 2) : (Math.random() * 15);
+    const increment = isVideo ? Math.random() * 2 : Math.random() * 15;
     if (progress < 90) {
       progress += increment;
-      progressBar.style.width = Math.min(progress, 90) + "%";
+      progressBar.style.width = `${Math.min(progress, 90)}%`;
     }
   }, 500);
 
@@ -194,92 +265,86 @@ async function runDetection() {
     if (json.status === "success") {
       clearInterval(progressInterval);
       progressBar.style.width = "100%";
-      setTimeout(() => displayResults(json.data), 300); // Tunggu animasi bar selesai
-      showToast("Deteksi parkiran berhasil!", "success");
+      setTimeout(() => displayResults(json.data), 300);
+      showToast("Deteksi parkiran berhasil.", "success");
     } else {
       clearInterval(progressInterval);
       showToast(json.message || "Terjadi kesalahan pada deteksi.", "error");
     }
-  } catch (err) {
+  } catch (error) {
     clearInterval(progressInterval);
-    showToast("Gagal terhubung ke server: " + err.message, "error");
+    showToast(`Gagal terhubung ke server: ${error.message}`, "error");
   } finally {
     setTimeout(() => {
       detectBtn.disabled = false;
       detectBtn.classList.remove("loading");
       btnLoader.style.display = "none";
       loadingOverlay.style.display = "none";
-      progressBar.style.width = "0%"; // Reset
+      progressBar.style.width = "0%";
     }, 400);
   }
 }
 
-// ── Display Results ──
 function displayResults(data) {
-  resultsSection.style.display = "block";
+  resultsSection.style.display = "grid";
 
-  // Animate scroll to results
   setTimeout(() => {
     resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 100);
 
   updateDashboardData(data, true);
+  revealStatCards();
 
-  // Result image / video
-  if (data.result_image) {
-    const resultImg = $("#resultImage");
-    const resultVid = $("#resultVideo");
-    
-    if (data.is_video) {
-      resultVid.src = API_BASE + data.result_image;
-      resultVid.style.display = "block";
-      resultImg.style.display = "none";
-      videoTimeline = data.timeline || null;
-      lastRenderedTime = -1;
-      $(".slots-card").style.display = "block"; // Tetap tampilkan tabel, tapi dirender sebagai ringkasan
-    } else {
-      resultImg.src = API_BASE + data.result_image;
-      resultImg.style.display = "block";
-      resultVid.style.display = "none";
-      videoTimeline = null;
-      $(".slots-card").style.display = "block";
-    }
-    $(".result-image-card").style.display = "block";
+  if (!data.result_image) return;
+
+  const resultImg = $("#resultImage");
+  const resultVid = $("#resultVideo");
+
+  if (data.is_video) {
+    resultVid.src = API_BASE + data.result_image;
+    resultVid.style.display = "block";
+    resultImg.style.display = "none";
+    videoTimeline = data.timeline || null;
+    lastRenderedTime = -1;
+  } else {
+    resultImg.src = API_BASE + data.result_image;
+    resultImg.style.display = "block";
+    resultVid.style.display = "none";
+    videoTimeline = null;
   }
+
+  $(".slots-card").style.display = "block";
+  $(".result-image-card").style.display = "block";
 }
 
 function updateDashboardData(data, animate = false) {
   slotsData = data.slots || [];
-  
+
   if (animate) {
-    animateValue("statTotal", data.total_slots);
-    animateValue("statEmpty", data.empty);
-    animateValue("statOccupied", data.occupied);
-    animateValue("statRate", data.occupancy_rate, "%");
+    animateValue("statTotal", data.total_slots || 0);
+    animateValue("statEmpty", data.empty || 0);
+    animateValue("statOccupied", data.occupied || 0);
+    animateValue("statRate", data.occupancy_rate || 0, "%");
   } else {
-    $("#statTotal").textContent = data.total_slots;
-    $("#statEmpty").textContent = data.empty;
-    $("#statOccupied").textContent = data.occupied;
-    $("#statRate").textContent = data.occupancy_rate + "%";
+    $("#statTotal").textContent = data.total_slots || 0;
+    $("#statEmpty").textContent = data.empty || 0;
+    $("#statOccupied").textContent = data.occupied || 0;
+    $("#statRate").textContent = `${data.occupancy_rate || 0}%`;
   }
 
-  // Occupancy bar
   const rate = data.occupancy_rate || 0;
-  $("#occupancyPercent").textContent = rate + "%";
-  
+  $("#occupancyPercent").textContent = `${rate}%`;
+  $("#occupancyBarFill").style.width = animate ? "0%" : `${rate}%`;
   if (animate) {
     setTimeout(() => {
-      $("#occupancyBarFill").style.width = rate + "%";
+      $("#occupancyBarFill").style.width = `${rate}%`;
     }, 200);
-  } else {
-    $("#occupancyBarFill").style.width = rate + "%";
   }
-  
-  $("#legendEmpty").textContent = data.empty;
-  $("#legendOccupied").textContent = data.occupied;
 
-  // Slots table (Render sebagai ringkasan jika video, atau detail jika gambar)
-  const activeFilter = document.querySelector(".filter-btn.active");
+  $("#legendEmpty").textContent = data.empty || 0;
+  $("#legendOccupied").textContent = data.occupied || 0;
+
+  const activeFilter = $(".filter-btn.active");
   renderSlotsTable(slotsData, activeFilter ? activeFilter.dataset.filter : "all");
 }
 
@@ -287,79 +352,87 @@ function animateValue(id, target, suffix = "") {
   const el = document.getElementById(id);
   const duration = 800;
   const start = performance.now();
-  const from = 0;
+  const numericTarget = Number(target) || 0;
 
   function update(now) {
-    const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    // Ease out cubic
+    const progress = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3);
-    const current = Math.round(from + (target - from) * eased);
-    el.textContent = current + suffix;
+    el.textContent = `${Math.round(numericTarget * eased)}${suffix}`;
     if (progress < 1) requestAnimationFrame(update);
   }
+
   requestAnimationFrame(update);
 }
 
-// ── Slots Table ──
 function renderSlotsTable(slots, filter = "all") {
   const tbody = $("#slotsTableBody");
   const isVideoMode = !!videoTimeline;
+  const colSpan = isVideoMode ? 4 : 5;
 
-  // Header tabel: Sembunyikan "Posisi" jika video (sesuai request sebelumnya "tidak dengan lokasinya")
-  if (isVideoMode) {
-    $("#slotsTable thead").innerHTML = `<tr><th>ID</th><th>Status</th><th>Label</th><th>Confidence</th></tr>`;
-  } else {
-    $("#slotsTable thead").innerHTML = `<tr><th>ID</th><th>Status</th><th>Label</th><th>Confidence</th><th>Posisi</th></tr>`;
-  }
-  
+  $("#slotsTable thead").innerHTML = isVideoMode
+    ? "<tr><th>ID</th><th>Status</th><th>Label</th><th>Confidence</th></tr>"
+    : "<tr><th>ID</th><th>Status</th><th>Label</th><th>Confidence</th><th>Posisi</th></tr>";
+
   $(".slot-filter").style.display = "flex";
 
-  const filtered = filter === "all" ? slots : slots.filter((s) => s.status === filter);
+  const filtered = filter === "all" ? slots : slots.filter((slot) => slot.status === filter);
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">Tidak ada data slot.</td></tr>`;
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="empty-table-state">Tidak ada data slot untuk filter ini.</div></td></tr>`;
     return;
   }
 
-  tbody.innerHTML = filtered
-    .map((slot) => {
-      const statusClass = slot.status === "occupied" ? "occupied" : "empty";
-      const statusLabel = slot.status === "occupied" ? "Terisi" : "Kosong";
-      const conf = Math.round(slot.confidence * 100);
-      const bbox = slot.bbox;
-      return `
-      <tr>
-        <td><strong>#${slot.slot_id}</strong></td>
+  tbody.innerHTML = filtered.map((slot, index) => {
+    const statusClass = slot.status === "occupied" ? "occupied" : "empty";
+    const statusLabel = slot.status === "occupied" ? "Terisi" : "Kosong";
+    const conf = Math.round((slot.confidence || 0) * 100);
+    const bbox = slot.bbox || {};
+    const confidenceTone = conf >= 80 ? "high" : conf >= 55 ? "medium" : "low";
+    const label = slot.label || "-";
+    const staggerDelay = Math.min(index * 60, 600);
+    const positionCell = isVideoMode
+      ? ""
+      : `<td>
+          <div class="bbox-chip">
+            <span>${bbox.x1 ?? "-"}, ${bbox.y1 ?? "-"}</span>
+            <span class="bbox-arrow">to</span>
+            <span>${bbox.x2 ?? "-"}, ${bbox.y2 ?? "-"}</span>
+          </div>
+        </td>`;
+
+    return `
+      <tr class="slot-row ${statusClass}" style="--stagger-delay: ${staggerDelay}ms">
+        <td>
+          <span class="slot-id-pill">#${slot.slot_id}</span>
+        </td>
         <td><span class="status-badge ${statusClass}">
-          <span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>
+          <span class="status-pulse"></span>
           ${statusLabel}
         </span></td>
-        <td>${slot.label}</td>
+        <td><span class="model-label">${label}</span></td>
         <td>
-          <div class="confidence-bar-wrap">
-            <div class="confidence-bar"><div class="confidence-bar-inner" style="width:${conf}%"></div></div>
+          <div class="confidence-bar-wrap ${confidenceTone}">
+            <div class="confidence-bar">
+              <div class="confidence-bar-inner" style="width:${conf}%"></div>
+            </div>
             <span class="confidence-val">${conf}%</span>
           </div>
         </td>
-        ${isVideoMode ? '' : `<td><span class="bbox-text">(${bbox.x1}, ${bbox.y1}) → (${bbox.x2}, ${bbox.y2})</span></td>`}
+        ${positionCell}
       </tr>`;
-    })
-    .join("");
+  }).join("");
 }
 
-// ── Filters ──
 function setupFilters() {
   document.querySelectorAll(".filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".filter-btn").forEach((item) => item.classList.remove("active"));
       btn.classList.add("active");
       renderSlotsTable(slotsData, btn.dataset.filter);
     });
   });
 }
 
-// ── Toast Notifications ──
 function showToast(message, type = "info") {
   const icons = {
     success: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`,
@@ -378,7 +451,6 @@ function showToast(message, type = "info") {
   }, 4000);
 }
 
-// ── Lightbox (zoom gambar hasil) ──
 function setupLightbox() {
   const lightbox = $("#resultLightbox");
   const lightboxImg = $("#lightboxImage");
@@ -386,8 +458,8 @@ function setupLightbox() {
   const resultImg = $("#resultImage");
   const resultVid = $("#resultVideo");
 
-  // Klik gambar hasil → buka lightbox
   resultImg.addEventListener("click", () => {
+    if (!resultImg.src) return;
     lightboxImg.src = resultImg.src;
     lightboxImg.style.display = "block";
     lightboxVid.style.display = "none";
@@ -395,52 +467,79 @@ function setupLightbox() {
   });
 
   resultVid.addEventListener("click", () => {
+    if (!resultVid.src) return;
     lightboxVid.src = resultVid.src;
     lightboxVid.style.display = "block";
     lightboxImg.style.display = "none";
     lightbox.classList.add("active");
   });
 
-  // Klik lightbox → tutup
-  lightbox.addEventListener("click", (e) => {
-    if(e.target === lightboxVid) return; // Don't close if clicking the video controls
+  lightbox.addEventListener("click", (event) => {
+    if (event.target === lightboxVid) return;
     lightbox.classList.remove("active");
     lightboxVid.pause();
   });
 
-  // Escape → tutup lightbox
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && lightbox.classList.contains("active")) {
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && lightbox.classList.contains("active")) {
       lightbox.classList.remove("active");
       lightboxVid.pause();
     }
   });
 }
 
-// Init lightbox saat DOM ready
-document.addEventListener("DOMContentLoaded", () => {
-  setupLightbox();
-  
-  // Realtime Sync Video Timeline
+function revealStatCards() {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const statCards = document.querySelectorAll(".stat-card");
+  const STAGGER_MS = 120;
+
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    statCards.forEach((card) => {
+      card.classList.add("is-revealed");
+      card.style.opacity = "1";
+      card.style.transform = "none";
+    });
+    return;
+  }
+
+  statCards.forEach((card) => {
+    card.classList.remove("is-revealed");
+  });
+
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      statObserver.unobserve(entry.target);
+      entry.target.classList.add("is-revealed");
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -4% 0px" });
+
+  statCards.forEach((card, index) => {
+    card.style.setProperty("--stagger-delay", `${index * STAGGER_MS}ms`);
+    statObserver.observe(card);
+  });
+}
+
+function setupVideoTimelineSync() {
   const resultVid = $("#resultVideo");
+
   resultVid.addEventListener("timeupdate", () => {
     if (!videoTimeline || videoTimeline.length === 0) return;
+
     const currentTime = resultVid.currentTime;
-    
-    // Temukan data timeline terdekat dengan waktu video saat ini
     let currentData = videoTimeline[0];
-    for (let i = 0; i < videoTimeline.length; i++) {
+
+    for (let i = 0; i < videoTimeline.length; i += 1) {
       if (videoTimeline[i].time <= currentTime) {
         currentData = videoTimeline[i];
       } else {
-        break; // timeline diurutkan dari awal, jadi bisa langsung break
+        break;
       }
     }
-    
-    // Jangan update DOM terus menerus jika datanya sama (optimasi render tabel)
+
     if (currentData && currentData.time !== lastRenderedTime) {
-      updateDashboardData(currentData, false); // false = jangan di-animasikan pelan, langsung update
+      updateDashboardData(currentData, false);
       lastRenderedTime = currentData.time;
     }
   });
-});
+}
