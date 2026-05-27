@@ -29,14 +29,9 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
-    # Preprocessing: Resize jika resolusi terlalu besar agar inferensi lebih ringan
-    max_dim = 640
-    scale = 1.0
-    if width > max_dim or height > max_dim:
-        scale = max_dim / max(width, height)
-    
-    new_width = int(width * scale)
-    new_height = int(height * scale)
+    # Ensure video dimensions are even numbers for codec compatibility
+    out_width = width if width % 2 == 0 else width - 1
+    out_height = height if height % 2 == 0 else height - 1
     
     # Preprocessing: Skip frame (proses 1 dari tiap N frame) untuk mengurangi beban
     process_every_n_frames = max(1, fps // 10) # Target sekitar 10 FPS
@@ -50,7 +45,7 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
         output_path = os.path.join(config.RESULT_FOLDER, filename)
         # VP80 (webm) works well in HTML5 browsers
         fourcc = cv2.VideoWriter_fourcc(*'vp80')
-        out = cv2.VideoWriter(output_path, fourcc, out_fps, (new_width, new_height))
+        out = cv2.VideoWriter(output_path, fourcc, out_fps, (out_width, out_height))
         result_video_url = f"/static/results/{filename}"
 
     empty_count = 0
@@ -75,9 +70,9 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
             
         frame_idx += 1
         
-        # Perkecil resolusi frame sebelum masuk ke model YOLO
-        if scale != 1.0:
-            frame = cv2.resize(frame, (new_width, new_height))
+        # Ensure frame matches output dimensions if we had to adjust for odd sizes
+        if frame.shape[1] != out_width or frame.shape[0] != out_height:
+            frame = cv2.resize(frame, (out_width, out_height))
             
         results = model(frame, verbose=False)
         result = results[0]
@@ -121,7 +116,7 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
         slots = current_slots
         
         if save_result and out is not None:
-            img_bgr = result.plot()
+            img_bgr = result.plot(line_width=2)
             _draw_summary_bar(img_bgr, empty_count, occupied_count)
             out.write(img_bgr)
             
