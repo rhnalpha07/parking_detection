@@ -3,7 +3,22 @@ import os
 import uuid
 import config
 import torch
+import urllib.request
+import bz2
 from ultralytics import YOLO
+
+# Cek & Download OpenH264 DLL (dibutuhkan OpenCV di Windows untuk render video H.264 agar bisa diputar di Chrome)
+DLL_NAME = "openh264-1.8.0-win64.dll"
+if os.name == 'nt' and not os.path.exists(DLL_NAME):
+    print(f"[*] Mendownload {DLL_NAME} untuk dukungan video H.264 di browser...")
+    try:
+        urllib.request.urlretrieve(f"https://github.com/cisco/openh264/releases/download/v1.8.0/{DLL_NAME}.bz2", f"{DLL_NAME}.bz2")
+        with open(DLL_NAME, 'wb') as new_file, bz2.BZ2File(f"{DLL_NAME}.bz2", 'rb') as file:
+            new_file.write(file.read())
+        os.remove(f"{DLL_NAME}.bz2")
+        print("[*] Selesai mendownload OpenH264 DLL.")
+    except Exception as e:
+        print(f"[!] Gagal mendownload {DLL_NAME}: {e}")
 
 # Cek apakah GPU (CUDA) tersedia
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -49,8 +64,8 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
         os.makedirs(config.RESULT_FOLDER, exist_ok=True)
         filename = f"result_{uuid.uuid4().hex[:8]}.mp4"
         output_path = os.path.join(config.RESULT_FOLDER, filename)
-        # MP4V works better on default Windows OpenCV installations
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # AVC1 (H.264) is universally supported by web browsers like Chrome and Safari
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
         out = cv2.VideoWriter(output_path, fourcc, out_fps, (out_width, out_height))
         result_video_url = f"/static/results/{filename}"
 
