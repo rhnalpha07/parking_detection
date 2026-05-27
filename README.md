@@ -73,7 +73,15 @@ Pastikan Python 3 telah terinstal di sistem Anda, lalu jalankan:
 pip install -r requirements.txt
 ```
 
-### 3. Jalankan Aplikasi
+### 3. Aktifkan Akselerasi GPU (Penting untuk Pengguna NVIDIA GTX/RTX)
+Secara default, instalasi `requirements.txt` mungkin hanya menginstal PyTorch versi CPU. Agar pemrosesan video jauh lebih cepat, ganti PyTorch Anda dengan versi CUDA (11.8):
+```bash
+pip uninstall torch torchvision torchaudio -y
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+*(Lewati langkah ini jika Anda tidak memiliki GPU NVIDIA atau hanya menggunakan CPU).*
+
+### 4. Jalankan Aplikasi
 Jalankan Flask server lokal:
 ```bash
 python app.py
@@ -155,6 +163,6 @@ Mengirim berkas gambar atau video untuk dianalisis oleh model.
 
 1. **File Model (`best.pt`)**: File bobot model YOLOv8 `best.pt` wajib diletakkan di root direktori project sebelum menjalankan `app.py`.
 2. **Ignored Files**: Ketika Anda mengkloning proyek, folder `static/results/` dan `static/uploads/` akan kosong. Folder-folder ini diabaikan oleh git agar file pengujian Anda tidak terunggah ke repositori.
-3. **Format Video**: Hasil anotasi video akan dikompresi dan disimpan dalam format `.webm` menggunakan codec VP8 agar dapat langsung dirender dan diputar secara native pada browser HTML5 modern tanpa plugin tambahan.
+3. **Format Video**: Hasil anotasi video akan disimpan dalam format `.mp4` menggunakan codec `avc1` (H.264) agar dapat langsung dirender dan diputar secara mulus pada semua browser HTML5 modern tanpa kendala kompatibilitas.
 4. **Pembersihan Log & Temp**: File `debug.log`, folder `.agents/`, `.codex/`, dan file sementara `skills-lock.json` telah dimasukkan ke `.gitignore` sehingga git log tim akan tetap bersih dan terfokus pada fungsionalitas kode utama.
 
