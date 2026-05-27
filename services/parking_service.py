@@ -47,10 +47,10 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
     out = None
     if save_result:
         os.makedirs(config.RESULT_FOLDER, exist_ok=True)
-        filename = f"result_{uuid.uuid4().hex[:8]}.webm"
+        filename = f"result_{uuid.uuid4().hex[:8]}.mp4"
         output_path = os.path.join(config.RESULT_FOLDER, filename)
-        # VP80 (webm) works well in HTML5 browsers
-        fourcc = cv2.VideoWriter_fourcc(*'vp80')
+        # MP4V works better on default Windows OpenCV installations
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_path, fourcc, out_fps, (out_width, out_height))
         result_video_url = f"/static/results/{filename}"
 
