@@ -2,11 +2,17 @@ import cv2
 import os
 import uuid
 import config
+import torch
 from ultralytics import YOLO
 
-# Load model secara global
+# Cek apakah GPU (CUDA) tersedia
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f"[*] Inisialisasi Model YOLO. Device yang digunakan: {device.upper()}")
+
+# Load model secara global dan set device
 MODEL_PATH = "best.pt"
 model = YOLO(MODEL_PATH, task='detect')
+model.to(device)
 
 def analyze_parking(file_path: str, save_result: bool = True) -> dict:
     ext = file_path.rsplit(".", 1)[-1].lower()
