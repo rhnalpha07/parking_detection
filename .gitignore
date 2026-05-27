@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.hypotheses/
+.pytest_cache/
+
+# IDEs/Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+debug.log
+.agents/
+.codex/
+skills-lock.json
+
+# Static results and uploads (temporary/generated files)
+static/results/*
+!static/results/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
