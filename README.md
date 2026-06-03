@@ -1,142 +1,112 @@
-# ParkVision - Premium Parking Detection API & Interface
+# ParkVision — Intelligent Parking Infrastructure
 
-ParkVision adalah aplikasi web premium modern untuk mendeteksi slot parkir kosong (`empty`) dan terisi (`occupied`) dari media gambar atau video secara realtime. Sistem ini menggunakan backend **Flask** dengan model computer vision **YOLOv8** lokal (`best.pt`), serta antarmuka web (frontend) mutakhir yang responsif dan interaktif.
+![ParkVision Banner](https://img.shields.io/badge/UI%2FUX-Agency_Premium-00e5ff?style=for-the-badge) ![YOLOv8](https://img.shields.io/badge/YOLO-v8-yellow?style=for-the-badge&logo=yolo) ![Flask](https://img.shields.io/badge/Backend-Flask-black?style=for-the-badge&logo=flask) ![GSAP](https://img.shields.io/badge/Motion-GSAP-88CE02?style=for-the-badge)
 
-Dokumentasi ini ditulis agar tim pengembang dapat dengan mudah melakukan kloning dan menjalankan aplikasi tanpa kendala konfigurasi.
+ParkVision adalah sistem cerdas untuk mendeteksi ketersediaan slot parkir secara real-time dari media gambar maupun video. Menggabungkan ketangguhan model **YOLOv8** di sisi *backend* (Flask) dengan antarmuka web berstandar **High-End Agency ($150k+ build)**.
 
----
-
-## 🚀 Fitur Unggulan
-
-- **Premium UI/UX Design**: Antarmuka futuristik dengan tema gelap (dark-tech), efek glassmorphism, responsive grid, serta interaktivitas penuh.
-- **3D Perspective Hero**: Elemen dekoratif interaktif di halaman utama yang bergerak mengikuti arah kursor untuk memberikan kesan modern dan mahal.
-- **Deteksi Gambar**: API memproses gambar, menghitung jumlah slot, dan mengembalikan anotasi visual bounding box beserta statistik *occupancy rate*.
-- **Deteksi Video**: Mendukung analisis video dengan pemrosesan frame yang dioptimalkan (~10 FPS, maks 150 frame) serta menghasilkan output video `.webm` dan *timeline* status okupansi interaktif.
-- **Clean Repository**: Konfigurasi `.gitignore` yang ketat agar file sampah hasil deteksi statis, cache python, dan folder agent tidak mengotori repositori git saat dikembangkan.
+Dokumentasi ini ditulis agar tim pengembang dapat dengan mudah melakukan kloning, menjalankan, serta mengembangkan aplikasi tanpa hambatan teknis.
 
 ---
 
-## 🛠️ Arsitektur & Teknologi
+## ✨ Fitur & Arsitektur Visual
 
-- **Backend**: Python 3, Flask, Flask-CORS
-- **Computer Vision**: Ultralytics YOLOv8, OpenCV (Headless)
-- **Model Default**: `best.pt` (lokal di root folder)
-- **Frontend**: HTML5, Vanilla CSS (Premium styling, HSL colors), Vanilla JavaScript (Interaksi 3D, Chart rendering, AJAX upload)
+Sistem ini didesain tidak hanya sekadar fungsional, tetapi mematuhi standar *Awwwards-Tier Design Engineering*:
 
----
-
-## 📂 Struktur Project
-
-```text
-parking_api_updated_v1/
-|-- app.py                         # Entry point Flask & routing Web/API
-|-- config.py                      # Konfigurasi folder, ekstensi file, dan nama label kelas
-|-- requirements.txt               # Daftar dependensi Python
-|-- best.pt                        # File model YOLOv8 (wajib ada di root)
-|-- .env.example                   # Contoh konfigurasi environment
-|-- .gitignore                     # Aturan pengecualian file untuk repositori git yang bersih
-|
-|-- routes/
-|   |-- detect.py                  # Endpoint POST /api/detect
-|   `-- status.py                  # Endpoint GET /api/ dan GET /api/health
-|
-|-- services/
-|   `-- parking_service.py         # Inferensi YOLOv8, anotasi visual, dan analisis media
-|
-|-- utils/
-|   |-- file_helper.py             # Validasi file, helper upload, dan pembersihan
-|   `-- response_helper.py         # Format response JSON terstandar
-|
-`-- static/
-    |-- index.html                 # Halaman utama ParkVision (Premium UI)
-    |-- css/style.css              # Tata gaya modern (Glassmorphism & animations)
-    |-- js/app.js                  # Logika upload, fetch API, tabel dinamis, & timeline
-    |-- js/hero3d.js               # Efek 3D tilt interaktif pada section hero
-    |-- img/                       # Aset gambar visual beresolusi tinggi
-    |-- uploads/                   # Folder penampung upload sementara (diabaikan git)
-    `-- results/                   # Folder hasil visualisasi deteksi (diabaikan git)
-```
+- **Premium Dark-Tech UI**: Antarmuka futuristik dengan palet *deep OLED black*, efek *glassmorphism* tingkat lanjut, dan tipografi *variable-width* yang tajam.
+- **Asymmetrical Bento Dashboard (7/5 Split)**: Hasil deteksi tidak ditampilkan secara kaku. Dashboard terbagi menjadi *viewport* media yang mendominasi (7-kolom) disandingkan dengan *live stats sidebar* (5-kolom).
+- **Live Occupancy Ring Gauge**: Visualisasi tingkat keterisian parkir (okupansi) yang dinamis menggunakan *SVG stroke-dashoffset* animasi dan indikator warna adaptif (Hijau/Kuning/Merah).
+- **Haptic Micro-interactions**: Menggunakan animasi berbasis kurva *cubic-bezier* khusus (`0.32, 0.72, 0, 1`) yang mensimulasikan hukum fisika (berat/massa) pada setiap interaksi *button hover*, nav-reveal, dan unggah file.
+- **Deteksi Video Teroptimasi**: Pemrosesan *frame-by-frame* pintar via YOLOv8 (maks 150 frame, ~10 FPS) dengan *output* MP4 kompatibel (H.264).
 
 ---
 
-## 💻 Cara Instalasi & Menjalankan
+## 🛠️ Tech Stack
+
+### 🧠 Computer Vision & Backend
+- **Ultralytics YOLOv8** (Custom Model `best.pt`)
+- **Python 3.9+** & **Flask** (API & Routing)
+- **OpenCV (Headless)** (Anotasi Bounding Box)
+
+### 🎨 Frontend & Motion
+- **HTML5 & Vanilla CSS** (Zero framework bloat, performa *hardware-accelerated*)
+- **GSAP (GreenSock)** (ScrollTriggers & koreografi animasi fluid)
+- **Three.js** (Efek 3D *Tilt* Interaktif di Hero Section)
+
+---
+
+## 🚀 Cara Instalasi (Local Development)
 
 ### 1. Kloning Repositori
+Pastikan Anda berada di direktori *workspace* yang tepat, lalu eksekusi:
 ```bash
-git clone <url-repositori-anda>
-cd parking_api_updated_v1
+git clone https://github.com/rhnalpha07/parking_detection.git
+cd parking_detection
 ```
 
-### 2. Install Dependensi
-Pastikan Python 3 telah terinstal di sistem Anda, lalu jalankan:
+### 2. Persiapan Dependensi
+Sangat disarankan menggunakan *virtual environment* (`venv`). Install seluruh dependensi yang dibutuhkan:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Aktifkan Akselerasi GPU (Penting untuk Pengguna NVIDIA GTX/RTX)
-Secara default, instalasi `requirements.txt` mungkin hanya menginstal PyTorch versi CPU. Agar pemrosesan video jauh lebih cepat, ganti PyTorch Anda dengan versi CUDA (11.8):
+### 3. Akselerasi GPU (Untuk Pengguna NVIDIA - Opsional tapi Direkomendasikan)
+Secara bawaan, instalasi *requirements* memuat PyTorch versi CPU. Jika Anda memproses video, kecepatan akan meningkat drastis dengan versi CUDA:
 ```bash
 pip uninstall torch torchvision torchaudio -y
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
-*(Lewati langkah ini jika Anda tidak memiliki GPU NVIDIA atau hanya menggunakan CPU).*
 
-### 4. Jalankan Aplikasi
-Jalankan Flask server lokal:
+### 4. Menjalankan Server
+Pastikan model kustom Anda (`best.pt`) sudah berada di dalam folder *root*. Jalankan server *development*:
 ```bash
 python app.py
 ```
-
-Setelah server aktif, buka peramban Anda di alamat:
-**[http://localhost:5000](http://localhost:5000)**
+Akses antarmuka melalui peramban: **[http://localhost:5000](http://localhost:5000)**
 
 ---
 
-## ⚙️ Detail Konfigurasi (`config.py`)
+## 📂 Struktur Proyek
 
-Aplikasi ini dapat disesuaikan melalui file `config.py`:
-```python
-UPLOAD_FOLDER          = "static/uploads"
-RESULT_FOLDER          = "static/results"
-ALLOWED_EXTENSIONS     = {"png", "jpg", "jpeg", "mp4", "avi", "mov", "mkv", "webm"}
-MAX_FILE_SIZE_MB       = 100
-
-# Sesuaikan dengan nama kelas hasil training model YOLO Anda
-CLASS_EMPTY            = "empty"      # Label untuk slot kosong
-CLASS_OCCUPIED         = "occupied"   # Label untuk slot terisi (mobil/car)
+```text
+parking_detection/
+├── app.py                         # Entry point Flask (Routing utama)
+├── config.py                      # Konfigurasi parameter & rules direktori
+├── best.pt                        # ⚠️ WAJIB: Weights dari YOLOv8 Model
+├── requirements.txt               # Dependencies
+├── routes/
+│   ├── detect.py                  # Endpoint POST /api/detect (Inferensi AI)
+│   └── status.py                  # Endpoint GET /api/health (Ping server)
+├── services/
+│   └── parking_service.py         # Inti logika OpenCV & deteksi YOLOv8
+├── utils/
+│   ├── file_helper.py             # I/O Helper & validasi ekstensi media
+│   └── response_helper.py         # Standardisasi JSON API response
+└── static/                        # Frontend Assets
+    ├── index.html                 # Struktur markup High-End UI
+    ├── css/style.css              # Styling (Double-Bezel, Bento Grid, Ring Gauge)
+    ├── js/
+    │   ├── app.js                 # Integrasi API, logika upload & GSAP
+    │   └── hero3d.js              # Three.js canvas setup
+    ├── img/                       # Aset statis & background
+    ├── uploads/                   # (Git Ignored) Buffer unggahan user
+    └── results/                   # (Git Ignored) Hasil rendering AI
 ```
 
 ---
 
-## 📡 Panduan Endpoint API
+## 📡 API Endpoints
 
-### 1. GET `/api/health`
-Mengecek status kesehatan server dan versi model.
-**Contoh Response:**
+Aplikasi mengekspos API yang dapat dikonsumsi oleh *client* eksternal:
+
+| Method | Endpoint | Fungsi | Payload |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/health` | Cek status server (dipakai indikator UI) | *None* |
+| **POST** | `/api/detect` | Mengirim media untuk dianalisis model | `form-data` (`image`: file) |
+
+**Contoh Response Sukses (`/api/detect`)**:
 ```json
 {
   "status": "success",
-  "message": "API berjalan dengan baik.",
-  "data": {
-    "api": "Parking Detection API",
-    "version": "1.0.0",
-    "model": "local_yolo_v8"
-  }
-}
-```
-
-### 2. POST `/api/detect`
-Mengirim berkas gambar atau video untuk dianalisis oleh model.
-- **Content-Type**: `multipart/form-data`
-- **Payload**:
-  - `image`: File (Gambar atau Video)
-  - `save_result`: `true` atau `false` (Default: `true`)
-
-**Contoh Response (Gambar):**
-```json
-{
-  "status": "success",
-  "message": "Deteksi parkiran berhasil.",
   "data": {
     "total_slots": 12,
     "empty": 4,
@@ -146,9 +116,8 @@ Mengirim berkas gambar atau video untuk dianalisis oleh model.
       {
         "slot_id": 1,
         "status": "occupied",
-        "label": "occupied",
-        "confidence": 0.945,
-        "bbox": { "x": 100.5, "y": 80.2, "width": 50, "height": 35, "x1": 75, "y1": 62, "x2": 125, "y2": 97 }
+        "confidence": 0.94,
+        "bbox": { "x1": 75, "y1": 62, "x2": 125, "y2": 97 }
       }
     ],
     "result_image": "/static/results/result_8aef92a1.jpg",
@@ -159,10 +128,9 @@ Mengirim berkas gambar atau video untuk dianalisis oleh model.
 
 ---
 
-## ⚠️ Informasi Penting untuk Tim
+## 🤝 Catatan Pengembangan (Dev Notes)
+- Repositori ini menerapkan `.gitignore` yang sangat ketat. Folder `uploads/`, `results/`, dan *cache files* (`__pycache__`) tidak akan masuk ke dalam repositori demi menjaga *history* tetap bersih.
+- Komponen visual UI dibangun **tanpa** *framework CSS utility* raksasa seperti Tailwind, melainkan dengan CSS murni agar abstraksi visual tingkat tinggi seperti `backdrop-filter`, *concentric border radii*, dan masking animasi dapat dimanipulasi per *pixel*.
 
-1. **File Model (`best.pt`)**: File bobot model YOLOv8 `best.pt` wajib diletakkan di root direktori project sebelum menjalankan `app.py`.
-2. **Ignored Files**: Ketika Anda mengkloning proyek, folder `static/results/` dan `static/uploads/` akan kosong. Folder-folder ini diabaikan oleh git agar file pengujian Anda tidak terunggah ke repositori.
-3. **Format Video**: Hasil anotasi video akan disimpan dalam format `.mp4` menggunakan codec `avc1` (H.264) agar dapat langsung dirender dan diputar secara mulus pada semua browser HTML5 modern tanpa kendala kompatibilitas.
-4. **Pembersihan Log & Temp**: File `debug.log`, folder `.agents/`, `.codex/`, dan file sementara `skills-lock.json` telah dimasukkan ke `.gitignore` sehingga git log tim akan tetap bersih dan terfokus pada fungsionalitas kode utama.
-
+---
+*Developed with focus on privacy — inference runs 100% locally.*
