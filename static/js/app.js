@@ -84,27 +84,16 @@ function initGSAP() {
     });
   });
 
-  // Pinned Upload Section
-  if (window.innerWidth >= 768) {
-    ScrollTrigger.create({
-      trigger: "#uploadPanel",
-      start: "top top",
-      end: "bottom bottom",
-      pin: ".gsap-pin-section",
-      pinSpacing: false,
-    });
-  }
-
-  // Upload right column — fade in
-  gsap.from(".gsap-upload-right", {
-    y: 100,
+  // Upload panel — fade in (no pin, new full-width layout)
+  gsap.from("#uploadPanel .bento-outer", {
+    y: 60,
     opacity: 0,
     duration: 1,
     ease: "cubic-bezier(0.32, 0.72, 0, 1)",
     scrollTrigger: {
-      trigger: ".gsap-upload-right",
-      start: "top 85%",
-      toggleActions: "play none none reverse",
+      trigger: "#uploadPanel",
+      start: "top 88%",
+      toggleActions: "play none none none",
     },
   });
 
@@ -132,9 +121,21 @@ function initGSAP() {
    API Health Check
    ═══════════════════════════════════════ */
 async function checkApiHealth() {
+  var dot  = document.getElementById("statusDot");
+  var text = document.getElementById("statusText");
+  if (dot) { dot.className = "w-2 h-2 rounded-full checking"; dot.classList.add("checking"); }
+  if (text) text.textContent = "Connecting…";
   try {
-    await fetch(API_BASE + "/api/health");
+    var res = await fetch(API_BASE + "/api/health");
+    if (res.ok) {
+      if (dot)  { dot.className = ""; dot.classList.add("w-2","h-2","rounded-full","online"); }
+      if (text) text.textContent = "Model online";
+    } else {
+      throw new Error("not ok");
+    }
   } catch (error) {
+    if (dot)  { dot.className = ""; dot.classList.add("w-2","h-2","rounded-full","offline"); }
+    if (text) text.textContent = "API offline";
     showToast("API offline atau bermasalah.", "error");
   }
 }
@@ -155,14 +156,14 @@ function setupDropZone() {
   ["dragenter", "dragover"].forEach(function (name) {
     dropZone.addEventListener(name, function (e) {
       e.preventDefault();
-      dropZone.style.borderColor = "rgba(0, 229, 255, 0.5)";
-      dropZone.style.background = "rgba(0, 229, 255, 0.03)";
+      dropZone.classList.add("drag-over");
     });
   });
 
   ["dragleave", "drop"].forEach(function (name) {
     dropZone.addEventListener(name, function (e) {
       e.preventDefault();
+      dropZone.classList.remove("drag-over");
       dropZone.style.borderColor = "";
       dropZone.style.background = "";
     });
@@ -346,21 +347,36 @@ function updateDashboardData(data, animate) {
     animateValue("statTotal", data.total_slots || 0);
     animateValue("statEmpty", data.empty || 0);
     animateValue("statOccupied", data.occupied || 0);
-    animateValue("statRate", data.occupancy_rate || 0, "%");
   } else {
     $("#statTotal").textContent = data.total_slots || 0;
     $("#statEmpty").textContent = data.empty || 0;
     $("#statOccupied").textContent = data.occupied || 0;
-    $("#statRate").textContent = (data.occupancy_rate || 0) + "%";
   }
 
   var rate = data.occupancy_rate || 0;
   $("#occupancyPercent").textContent = rate + "%";
+
+  // Linear progress bar
   $("#occupancyBarFill").style.width = animate ? "0%" : rate + "%";
   if (animate) {
     setTimeout(function () {
       $("#occupancyBarFill").style.width = rate + "%";
     }, 200);
+  }
+
+  // Ring gauge (stroke-dasharray = 2πr = 2π×42 ≈ 263.9)
+  var ring = $("#occupancyRing");
+  if (ring) {
+    var circumference = 263.9;
+    var offset = circumference - (rate / 100) * circumference;
+    if (animate) {
+      ring.style.strokeDashoffset = circumference;
+      setTimeout(function () { ring.style.strokeDashoffset = offset; }, 200);
+    } else {
+      ring.style.strokeDashoffset = offset;
+    }
+    // Color: emerald when low, amber mid, rose when high
+    ring.style.stroke = rate >= 85 ? "#fb7185" : rate >= 60 ? "#fbbf24" : "#00e5ff";
   }
 
   var activeFilter = $(".filter-btn.active");
@@ -393,25 +409,33 @@ function renderSlotsTable(slots, filter) {
   var filtered = filter === "all" ? slots : slots.filter(function (s) { return s.status === filter; });
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="' + colSpan + '" class="py-4 text-gray-500 text-sm">Tidak ada data slot untuk filter ini.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="' + colSpan + '" class="px-4 py-8 text-gray-600 text-sm text-center">Tidak ada data slot untuk filter ini.</td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map(function (slot) {
     var isOccupied = slot.status === "occupied";
     var statusLabel = isOccupied ? "Terisi" : "Kosong";
+    var badgeClass = isOccupied ? "slot-badge slot-badge-occupied" : "slot-badge slot-badge-empty";
+    var dotBg = isOccupied ? "background:#fb7185" : "background:#34d399";
     var conf = Math.round((slot.confidence || 0) * 100);
+    var confColor = conf >= 85 ? "#34d399" : conf >= 60 ? "#fbbf24" : "#fb7185";
     var bbox = slot.bbox || {};
     var label = slot.label || "-";
     var positionCell = isVideoMode
       ? ""
-      : '<td class="py-3"><span class="bg-dark px-2 py-1 rounded text-xs font-mono border border-white/5">' + (bbox.x1 != null ? bbox.x1 : "-") + ", " + (bbox.y1 != null ? bbox.y1 : "-") + " to " + (bbox.x2 != null ? bbox.x2 : "-") + ", " + (bbox.y2 != null ? bbox.y2 : "-") + "</span></td>";
+      : '<td><span class="font-mono text-[0.65rem] text-gray-600">' +
+        (bbox.x1 != null ? bbox.x1 : "–") + '·' +
+        (bbox.y1 != null ? bbox.y1 : "–") + '·' +
+        (bbox.x2 != null ? (bbox.x2 - (bbox.x1||0)) : "–") + '·' +
+        (bbox.y2 != null ? (bbox.y2 - (bbox.y1||0)) : "–") +
+        '</span></td>';
 
-    return '<tr class="border-b border-white/5 hover:bg-white/3 transition-colors">' +
-      '<td class="py-3 font-bold font-mono text-xs">#' + slot.slot_id + '</td>' +
-      '<td class="py-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ' + (isOccupied ? "bg-rose-500/15 text-rose-400" : "bg-emerald-500/15 text-emerald-400") + '">' + statusLabel + '</span></td>' +
-      '<td class="py-3 text-gray-400 text-xs">' + label + '</td>' +
-      '<td class="py-3"><div class="flex items-center gap-2"><div class="w-20 h-1.5 bg-dark rounded-full overflow-hidden"><div class="h-full bg-white/60 rounded-full" style="width:' + conf + '%"></div></div><span class="text-xs font-mono text-gray-400">' + conf + '%</span></div></td>' +
+    return '<tr>' +
+      '<td>#' + slot.slot_id + '</td>' +
+      '<td><span class="' + badgeClass + '"><span class="slot-badge-dot" style="' + dotBg + '"></span>' + statusLabel + '</span></td>' +
+      '<td class="font-mono text-[0.72rem] text-gray-500">' + label + '</td>' +
+      '<td><div class="flex items-center gap-2"><div class="w-16 h-1 bg-white/8 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:' + conf + '%;background:' + confColor + '"></div></div><span class="text-[0.7rem] font-mono" style="color:' + confColor + '">' + conf + '%</span></div></td>' +
       positionCell +
       '</tr>';
   }).join("");

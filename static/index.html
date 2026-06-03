@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -182,172 +182,425 @@
                     </div>
 
                 </div>
-            </div>
-        </section>
 
-        <!-- ═══════════════════════════════════════════ -->
-        <!-- UPLOAD — Split Section (Left Pinned / Right Scroll) -->
-        <!-- ═══════════════════════════════════════════ -->
-        <section id="uploadPanel" class="relative py-32 md:py-48 px-6">
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-16">
-                
-                <!-- Left: Pinned context -->
-                <div class="md:w-5/12 relative">
-                    <div class="gsap-pin-section sticky top-32">
-                        <div class="text-accent/70 text-xs font-semibold tracking-[0.2em] uppercase mb-4">Upload</div>
-                        <h2 class="text-5xl md:text-6xl font-bold tracking-tighter leading-[0.95] mb-6">Drop media.</h2>
-                        <p class="text-gray-400 text-lg leading-relaxed mb-10 max-w-[50ch]">
-                            Gunakan JPG, PNG, MP4, AVI, MOV, atau WEBM. Sistem akan mengolah dan memetakan struktur spasial dalam detik.
-                        </p>
 
-                        <!-- Spec List -->
-                        <div class="flex flex-col gap-0 text-sm font-medium text-gray-500">
-                            <div class="flex justify-between border-b border-white/8 py-3">
-                                <span class="text-xs tracking-wider uppercase">Max file size</span>
-                                <span class="text-white font-mono text-xs">100 MB</span>
+                <!-- ─────────────────────────────────────── -->
+                <!-- METHODOLOGY — Flowchart + Tools + Stack -->
+                <!-- ─────────────────────────────────────── -->
+
+                <!-- Sub-header -->
+                <div class="gsap-reveal mt-28 md:mt-36 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="max-w-lg">
+                        <div class="text-violet-400/70 text-xs font-semibold tracking-[0.2em] uppercase mb-4">Methodology</div>
+                        <h2 class="text-4xl md:text-5xl font-bold tracking-tighter leading-[1.05] mb-4">Cara kerja sistem</h2>
+                        <p class="text-gray-400 text-lg leading-relaxed">Alur lengkap dari input media hingga output hasil deteksi parkir berbasis AI.</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs font-mono text-gray-600 border border-white/8 rounded-full px-5 py-2.5 self-start md:self-auto">
+                        <span class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></span>
+                        YOLOv8 · Flask · OpenCV
+                    </div>
+                </div>
+
+                <!-- FLOWCHART + ARCHITECTURE — 5/7 split -->
+                <div class="gsap-reveal bento-outer mb-5">
+                    <div class="bento-inner p-8 md:p-12">
+                        <div class="text-gray-500 text-xs font-semibold tracking-[0.18em] uppercase mb-10">System flowchart</div>
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+
+                            <!-- Left: Vertical numbered steps -->
+                            <div class="md:col-span-5 flex flex-col gap-0">
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">01</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Input Media</div><div class="flow-step-sub">JPG · PNG · MP4 · AVI · MOV</div></div>
+                                </div>
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">02</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Validasi File</div><div class="flow-step-sub">file_helper.py · ukuran &amp; ekstensi</div></div>
+                                </div>
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">03</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Upload &amp; Simpan</div><div class="flow-step-sub">static/uploads/ · UUID naming</div></div>
+                                </div>
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">04</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Routing Flask</div><div class="flow-step-sub">POST /api/detect · detect.py</div></div>
+                                </div>
+                                <div class="flow-step flow-step-core">
+                                    <div class="flow-step-left"><div class="flow-step-num flow-step-num-core">05</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Inferensi YOLOv8</div><div class="flow-step-sub">parking_service.py · GPU / CPU</div></div>
+                                </div>
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">06</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Klasifikasi Slot</div><div class="flow-step-sub">empty / occupied per bounding box</div></div>
+                                </div>
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">07</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Anotasi Visual</div><div class="flow-step-sub">OpenCV · bounding box · summary bar</div></div>
+                                </div>
+                                <div class="flow-step">
+                                    <div class="flow-step-left"><div class="flow-step-num">08</div><div class="flow-step-line"></div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Response JSON</div><div class="flow-step-sub">statistik · slot data · URL hasil</div></div>
+                                </div>
+                                <div class="flow-step flow-step-last">
+                                    <div class="flow-step-left"><div class="flow-step-num flow-step-num-end">09</div></div>
+                                    <div class="flow-step-body"><div class="flow-step-title">Output Final</div><div class="flow-step-sub">render frontend · tabel slot · statistik</div></div>
+                                </div>
                             </div>
-                            <div class="flex justify-between border-b border-white/8 py-3">
-                                <span class="text-xs tracking-wider uppercase">Formats</span>
-                                <span class="text-white font-mono text-xs">IMG / VID</span>
+
+                            <!-- Right: Architecture layer diagram -->
+                            <div class="md:col-span-7 flex flex-col gap-5 justify-center">
+                                <div class="arch-layer arch-layer-frontend">
+                                    <div class="arch-layer-label">Frontend</div>
+                                    <div class="arch-layer-tags"><span class="arch-tag">index.html</span><span class="arch-tag">app.js</span><span class="arch-tag">Three.js</span><span class="arch-tag">GSAP</span></div>
+                                </div>
+                                <div class="arch-arrow">
+                                    <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><path d="M8 0 V22" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/><path d="M3 18 L8 26 L13 18" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>
+                                    <span class="arch-arrow-label">HTTP multipart/form-data</span>
+                                </div>
+                                <div class="arch-layer arch-layer-flask">
+                                    <div class="arch-layer-label">Flask API</div>
+                                    <div class="arch-layer-tags"><span class="arch-tag">app.py</span><span class="arch-tag">routes/detect.py</span><span class="arch-tag">file_helper.py</span></div>
+                                </div>
+                                <div class="arch-arrow">
+                                    <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><path d="M8 0 V22" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/><path d="M3 18 L8 26 L13 18" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>
+                                    <span class="arch-arrow-label">analyze_parking(path)</span>
+                                </div>
+                                <div class="arch-layer arch-layer-yolo">
+                                    <div class="arch-layer-label">YOLOv8 Engine</div>
+                                    <div class="arch-layer-tags"><span class="arch-tag arch-tag-core">parking_service.py</span><span class="arch-tag arch-tag-core">best.pt</span><span class="arch-tag arch-tag-core">GPU / CPU</span></div>
+                                </div>
+                                <div class="arch-arrow">
+                                    <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><path d="M8 0 V22" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/><path d="M3 18 L8 26 L13 18" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>
+                                    <span class="arch-arrow-label">img/video + anotasi</span>
+                                </div>
+                                <div class="arch-layer arch-layer-storage">
+                                    <div class="arch-layer-label">Storage</div>
+                                    <div class="arch-layer-tags"><span class="arch-tag">static/uploads/</span><span class="arch-tag">static/results/</span><span class="arch-tag">OpenCV + H.264</span></div>
+                                </div>
                             </div>
-                            <div class="flex justify-between border-b border-white/8 py-3">
-                                <span class="text-xs tracking-wider uppercase">Engine</span>
-                                <span class="text-white font-mono text-xs">YOLO v8</span>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOOLS — Asymmetric 5/7 bento -->
+                <div class="gsap-reveal grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+                    <div class="bento-outer md:col-span-5">
+                        <div class="bento-inner p-7 md:p-8 h-full flex flex-col">
+                            <div class="stack-icon-wrap stack-icon-cv mb-6">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <div class="text-gray-500 text-xs tracking-[0.15em] uppercase mb-1">Computer Vision</div>
+                            <div class="text-white font-bold text-xl mb-6 tracking-tight">AI detection engine</div>
+                            <div class="flex flex-col gap-0 flex-1">
+                                <div class="stack-row"><div class="stack-dot stack-dot-cv-1"></div><span class="stack-lib">YOLOv8</span><span class="stack-desc">object detection model</span></div>
+                                <div class="stack-row"><div class="stack-dot stack-dot-cv-2"></div><span class="stack-lib">Ultralytics</span><span class="stack-desc">YOLO Python wrapper</span></div>
+                                <div class="stack-row"><div class="stack-dot stack-dot-cv-3"></div><span class="stack-lib">OpenCV</span><span class="stack-desc">anotasi &amp; video encoding</span></div>
+                                <div class="stack-row stack-row-last"><div class="stack-dot stack-dot-cv-4"></div><span class="stack-lib">PyTorch</span><span class="stack-desc">inference backend GPU/CPU</span></div>
+                            </div>
+                            <div class="mt-6 pt-5 border-t border-white/6 flex items-center gap-3">
+                                <span class="text-xs font-mono text-gray-600">best.pt</span>
+                                <span class="text-white/10">·</span>
+                                <span class="text-xs font-mono text-emerald-400/70">~96.4% acc.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-7 grid grid-cols-1 gap-4">
+                        <div class="bento-outer">
+                            <div class="bento-inner p-7 flex flex-col md:flex-row md:items-start gap-6">
+                                <div class="flex-shrink-0"><div class="stack-icon-wrap stack-icon-be"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 3a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5z"/><path d="M9 9h1v6H9zM14 9h1v6h-1z"/></svg></div></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-gray-500 text-xs tracking-[0.15em] uppercase mb-1">Backend</div>
+                                    <div class="text-white font-bold text-lg mb-4 tracking-tight">Server-side logic</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="stack-pill stack-pill-be">Python 3</span>
+                                        <span class="stack-pill stack-pill-be">Flask</span>
+                                        <span class="stack-pill stack-pill-be">Flask-CORS</span>
+                                        <span class="stack-pill stack-pill-be">Werkzeug</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bento-outer">
+                            <div class="bento-inner p-7 flex flex-col md:flex-row md:items-start gap-6">
+                                <div class="flex-shrink-0"><div class="stack-icon-wrap stack-icon-fe"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-gray-500 text-xs tracking-[0.15em] uppercase mb-1">Frontend</div>
+                                    <div class="text-white font-bold text-lg mb-4 tracking-tight">UI &amp; interaksi</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="stack-pill stack-pill-fe">HTML5</span>
+                                        <span class="stack-pill stack-pill-fe">Tailwind CSS</span>
+                                        <span class="stack-pill stack-pill-fe">Vanilla JS</span>
+                                        <span class="stack-pill stack-pill-fe">Three.js</span>
+                                        <span class="stack-pill stack-pill-fe">GSAP</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Upload zone + Results -->
-                <div class="md:w-7/12 flex flex-col gap-10 gsap-upload-right">
-                    
-                    <!-- Upload Card (Double-Bezel) -->
-                    <div class="bento-outer">
-                        <div class="bento-inner p-6 md:p-8">
-                            <div id="dropZone" class="relative border-2 border-dashed border-white/15 rounded-2xl p-10 md:p-12 text-center hover:border-accent/40 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] cursor-pointer flex flex-col items-center justify-center min-h-[280px] overflow-hidden group bg-dark/40">
-                                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.mp4,.avi,.mov,.webm" class="hidden">
-                                
-                                <div id="dropZoneContent" class="flex flex-col items-center gap-4 z-10 transition-opacity duration-300">
-                                    <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-accent/30 group-hover:bg-accent/5 transition-all duration-500">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-gray-400 group-hover:text-accent transition-colors duration-500">
-                                            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
-                                            <path d="M12 12v9" />
-                                            <path d="m16 16-4-4-4 4" />
-                                        </svg>
-                                    </div>
-                                    <div class="text-lg font-bold text-white">Drag and drop media di sini</div>
-                                    <div class="text-gray-500 text-sm">atau klik panel untuk memilih file</div>
-                                </div>
-
-                                <!-- Preview Container -->
-                                <div id="previewContainer" class="absolute inset-0 bg-dark z-20 flex-col hidden">
-                                    <img id="previewImage" alt="Preview gambar yang dipilih" class="w-full h-full object-cover hidden">
-                                    <video id="previewVideo" autoplay loop muted class="w-full h-full object-cover hidden"></video>
-                                    <button id="removePreview" class="absolute top-4 right-4 bg-dark/60 border border-white/10 p-2 rounded-full hover:bg-dark/90 transition-all duration-300 backdrop-blur-md">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                    </button>
-                                    <div id="previewInfo" class="absolute bottom-0 w-full bg-gradient-to-t from-dark/90 to-transparent p-4 text-left font-mono text-xs text-gray-300"></div>
+                <!-- PROJECT STRUCTURE + API + SPECS -->
+                <div class="gsap-reveal grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="bento-outer md:col-span-5">
+                        <div class="bento-inner p-7 md:p-8 h-full">
+                            <div class="text-gray-500 text-xs font-semibold tracking-[0.18em] uppercase mb-6">Project structure</div>
+                            <div class="font-mono text-xs leading-loose">
+                                <div class="tree-folder">parking_api_updated_v1/</div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">app.py</span><span class="tree-comment">entry point Flask</span></div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">config.py</span><span class="tree-comment">label &amp; folder config</span></div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">best.pt</span><span class="tree-comment">model weights YOLOv8</span></div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-dir">routes/</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">├──</span><span class="tree-file">detect.py</span><span class="tree-comment">POST /api/detect</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">└──</span><span class="tree-file">status.py</span><span class="tree-comment">GET /api/health</span></div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-dir">services/</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">└──</span><span class="tree-file">parking_service.py</span></div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-dir">utils/</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">├──</span><span class="tree-file">file_helper.py</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">└──</span><span class="tree-file">response_helper.py</span></div>
+                                <div class="tree-row"><span class="tree-prefix">└──</span><span class="tree-dir">static/</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">├──</span><span class="tree-file">index.html</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">├──</span><span class="tree-file">css/style.css</span></div>
+                                <div class="tree-row tree-indent"><span class="tree-prefix">└──</span><span class="tree-file">js/app.js</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bento-outer md:col-span-7">
+                        <div class="bento-inner p-7 md:p-8 h-full flex flex-col gap-8">
+                            <div>
+                                <div class="text-gray-500 text-xs font-semibold tracking-[0.18em] uppercase mb-5">API endpoints</div>
+                                <div class="flex flex-col gap-2.5">
+                                    <div class="endpoint-row"><span class="endpoint-method endpoint-get">GET</span><span class="endpoint-path">/api/health</span><span class="endpoint-desc">status &amp; versi model</span></div>
+                                    <div class="endpoint-row"><span class="endpoint-method endpoint-get">GET</span><span class="endpoint-path">/api/</span><span class="endpoint-desc">info API root</span></div>
+                                    <div class="endpoint-row"><span class="endpoint-method endpoint-post">POST</span><span class="endpoint-path">/api/detect</span><span class="endpoint-desc">kirim media → deteksi</span></div>
+                                    <div class="endpoint-row"><span class="endpoint-method endpoint-get">GET</span><span class="endpoint-path">/static/*</span><span class="endpoint-desc">aset &amp; hasil visualisasi</span></div>
                                 </div>
                             </div>
+                            <div>
+                                <div class="text-gray-500 text-xs font-semibold tracking-[0.18em] uppercase mb-4">Spesifikasi sistem</div>
+                                <div class="flex flex-col divide-y divide-white/5">
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Model</span><span class="spec-divide-value">YOLOv8 Custom</span></div>
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Akurasi</span><span class="spec-divide-value text-emerald-400">~96.4%</span></div>
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Max file size</span><span class="spec-divide-value">100 MB</span></div>
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Video processing</span><span class="spec-divide-value">~10 FPS · 150 frames max</span></div>
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Hardware</span><span class="spec-divide-value text-accent">GPU / CPU (auto-detect)</span></div>
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Output format</span><span class="spec-divide-value">JPEG · MP4 (H.264)</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <button id="detectBtn" class="w-full mt-5 bg-white text-dark py-4 rounded-xl font-bold text-base hover:bg-gray-100 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] flex justify-center items-center gap-2" disabled>
+        </section>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- DETECT — Full-width redesigned upload + dashboard -->
+        <!-- ═══════════════════════════════════════════ -->
+        <section id="uploadPanel" class="relative py-32 md:py-40 px-6">
+            <div class="max-w-7xl mx-auto">
+
+                <!-- Section header -->
+                <div class="gsap-reveal mb-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="max-w-lg">
+                        <div class="text-accent/70 text-xs font-semibold tracking-[0.2em] uppercase mb-4">Detection</div>
+                        <h2 class="text-4xl md:text-5xl font-bold tracking-tighter leading-[1.05] mb-3">Analisis parkiran.</h2>
+                        <p class="text-gray-400 text-lg leading-relaxed">Upload gambar atau video — AI mendeteksi dan mengklasifikasikan setiap slot secara real-time.</p>
+                    </div>
+                    <div id="apiStatusBadge" class="flex items-center gap-2.5 text-xs font-mono text-gray-600 border border-white/8 rounded-full px-5 py-2.5 self-start md:self-auto">
+                        <span class="w-2 h-2 rounded-full bg-gray-600" id="statusDot"></span>
+                        <span id="statusText">Connecting…</span>
+                    </div>
+                </div>
+
+                <!-- UPLOAD CARD — full-width, prominent -->
+                <div class="gsap-reveal bento-outer mb-5">
+                    <div class="bento-inner">
+                        <!-- Drop Zone -->
+                        <div id="dropZone" class="detect-dropzone group cursor-pointer">
+                            <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.mp4,.avi,.mov,.webm" class="hidden">
+
+                            <!-- Default state -->
+                            <div id="dropZoneContent" class="detect-dropzone-content">
+                                <div class="detect-upload-icon group-hover:scale-105 group-hover:border-accent/40 group-hover:bg-accent/5 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" class="text-gray-500 group-hover:text-accent transition-colors duration-500">
+                                        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                                        <path d="M12 12v9"/>
+                                        <path d="m16 16-4-4-4 4"/>
+                                    </svg>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-white font-bold text-xl mb-1.5 tracking-tight">Drag & drop media di sini</div>
+                                    <div class="text-gray-600 text-sm mb-6">atau klik untuk memilih file dari komputer</div>
+                                    <div class="flex flex-wrap gap-2 justify-center">
+                                        <span class="detect-fmt-pill">JPG</span>
+                                        <span class="detect-fmt-pill">PNG</span>
+                                        <span class="detect-fmt-pill detect-fmt-video">MP4</span>
+                                        <span class="detect-fmt-pill detect-fmt-video">AVI</span>
+                                        <span class="detect-fmt-pill detect-fmt-video">MOV</span>
+                                        <span class="detect-fmt-pill detect-fmt-video">WEBM</span>
+                                    </div>
+                                </div>
+                                <div class="detect-max-size">Max 100 MB</div>
+                            </div>
+
+                            <!-- Preview Container -->
+                            <div id="previewContainer" class="absolute inset-0 z-20 hidden flex-col">
+                                <img id="previewImage" alt="Preview" class="w-full h-full object-contain hidden bg-dark rounded-[calc(1.5rem-3px)]">
+                                <video id="previewVideo" autoplay loop muted class="w-full h-full object-contain hidden bg-dark rounded-[calc(1.5rem-3px)]"></video>
+                                <div class="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent rounded-[calc(1.5rem-3px)] pointer-events-none"></div>
+                                <button id="removePreview" class="absolute top-4 right-4 w-9 h-9 bg-dark/70 border border-white/12 rounded-full flex items-center justify-center hover:bg-dark hover:border-white/25 transition-all duration-300 backdrop-blur-md z-30">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                                <div id="previewInfo" class="absolute bottom-4 left-4 right-4 font-mono text-xs text-gray-400 z-30 pointer-events-none"></div>
+                            </div>
+                        </div>
+
+                        <!-- CTA Bar -->
+                        <div class="detect-cta-bar">
+                            <div class="flex items-center gap-3 text-xs text-gray-600 font-mono">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                Diproses lokal · data tidak dikirim ke cloud
+                            </div>
+                            <button id="detectBtn" class="detect-btn group" disabled>
                                 <span class="btn-text">Deteksi parkiran</span>
-                                <svg id="btnLoader" class="animate-spin hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                                <svg id="btnLoader" class="animate-spin hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                                <span class="detect-btn-icon group-hover:translate-x-0.5 group-hover:-translate-y-px transition-transform duration-300">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </span>
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Results Section (Hidden initially) -->
-                    <div id="resultsSection" class="hidden flex flex-col gap-6">
-                        
-                        <!-- Stats Grid -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="bento-outer">
-                                <div class="bento-inner p-5">
-                                    <div class="text-gray-500 text-xs font-medium tracking-wider uppercase mb-2">Total slot</div>
-                                    <div id="statTotal" class="text-3xl font-bold font-mono tabular-nums">0</div>
-                                </div>
-                            </div>
-                            <div class="bento-outer">
-                                <div class="bento-inner p-5">
-                                    <div class="text-gray-500 text-xs font-medium tracking-wider uppercase mb-2">Kosong</div>
-                                    <div id="statEmpty" class="text-3xl font-bold text-emerald-400 font-mono tabular-nums">0</div>
-                                </div>
-                            </div>
-                            <div class="bento-outer">
-                                <div class="bento-inner p-5">
-                                    <div class="text-gray-500 text-xs font-medium tracking-wider uppercase mb-2">Terisi</div>
-                                    <div id="statOccupied" class="text-3xl font-bold text-rose-400 font-mono tabular-nums">0</div>
-                                </div>
-                            </div>
-                            <div class="bento-outer">
-                                <div class="bento-inner p-5">
-                                    <div class="text-gray-500 text-xs font-medium tracking-wider uppercase mb-2">Okupansi</div>
-                                    <div id="statRate" class="text-3xl font-bold font-mono tabular-nums">0%</div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- RESULTS DASHBOARD (hidden until detection completes) -->
+                <div id="resultsSection" class="hidden flex-col gap-5">
 
-                        <!-- Occupancy Bar -->
-                        <div class="bento-outer">
-                            <div class="bento-inner p-6 md:p-8">
-                                <div class="flex justify-between items-end mb-4">
-                                    <h3 class="text-lg font-bold">Tingkat okupansi</h3>
-                                    <span id="occupancyPercent" class="text-xl font-bold font-mono tabular-nums">0%</span>
-                                </div>
-                                <div class="h-3 bg-dark rounded-full overflow-hidden relative">
-                                    <div id="occupancyBarFill" class="h-full bg-gradient-to-r from-accent to-emerald-400 rounded-full transition-all duration-1000 ease-[cubic-bezier(0.32,0.72,0,1)]" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Top row: 7/5 split — media left, stats right -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
 
-                        <!-- Media Result -->
-                        <div class="bento-outer">
+                        <!-- Left: Detection media (span 7) -->
+                        <div class="bento-outer md:col-span-7">
                             <div class="bento-inner overflow-hidden">
-                                <div class="p-5 border-b border-white/8">
-                                    <h3 class="text-lg font-bold">Hasil deteksi</h3>
+                                <!-- Card header -->
+                                <div class="flex items-center justify-between px-6 py-4 border-b border-white/6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                                        <span class="text-sm font-semibold tracking-tight">Hasil deteksi</span>
+                                    </div>
+                                    <span class="text-xs font-mono text-gray-600">YOLOv8 · annotated</span>
                                 </div>
-                                <div id="resultImageWrapper" class="relative w-full aspect-video bg-dark cursor-pointer group flex items-center justify-center">
+                                <!-- Media viewport -->
+                                <div id="resultImageWrapper" class="relative w-full aspect-video bg-[#0d0d0d] cursor-pointer group flex items-center justify-center">
                                     <img id="resultImage" class="max-w-full max-h-full object-contain hidden" alt="Hasil deteksi parkir">
                                     <video id="resultVideo" autoplay loop muted controls class="max-w-full max-h-full object-contain hidden"></video>
-                                    <div class="absolute inset-0 bg-dark/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
-                                        <span class="text-white font-semibold tracking-widest text-xs bg-dark/60 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">PERBESAR</span>
+                                    <!-- Hover overlay -->
+                                    <div class="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                        <div class="flex items-center gap-2 bg-dark/60 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                                            <span class="text-white text-xs font-semibold tracking-widest uppercase">Perbesar</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Slots Table -->
-                        <div class="bento-outer">
-                            <div class="bento-inner p-6 md:p-8">
-                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                                    <h3 class="text-lg font-bold">Detail slot</h3>
-                                    <div class="flex gap-2">
-                                        <button class="filter-btn active px-4 py-1.5 rounded-full bg-white text-dark text-xs font-bold transition-all duration-300" data-filter="all" id="filterAll">Semua</button>
-                                        <button class="filter-btn px-4 py-1.5 rounded-full bg-transparent text-gray-400 text-xs font-bold border border-white/10 hover:border-white/25 hover:text-white transition-all duration-300" data-filter="empty" id="filterEmpty">Kosong</button>
-                                        <button class="filter-btn px-4 py-1.5 rounded-full bg-transparent text-gray-400 text-xs font-bold border border-white/10 hover:border-white/25 hover:text-white transition-all duration-300" data-filter="occupied" id="filterOccupied">Terisi</button>
+                        <!-- Right: Stats sidebar (span 5) -->
+                        <div class="md:col-span-5 flex flex-col gap-5">
+
+                            <!-- Big occupancy gauge card -->
+                            <div class="bento-outer flex-1">
+                                <div class="bento-inner p-6 h-full flex flex-col justify-between">
+                                    <div class="text-gray-500 text-xs font-semibold tracking-[0.15em] uppercase mb-4">Tingkat okupansi</div>
+                                    <div class="flex flex-col items-center justify-center flex-1 py-4">
+                                        <!-- Ring gauge -->
+                                        <div class="result-ring-wrap mb-4">
+                                            <svg class="result-ring-svg" viewBox="0 0 100 100">
+                                                <circle class="result-ring-track" cx="50" cy="50" r="42" fill="none" stroke-width="7"/>
+                                                <circle id="occupancyRing" class="result-ring-fill" cx="50" cy="50" r="42" fill="none" stroke-width="7"
+                                                    stroke-linecap="round"
+                                                    stroke-dasharray="263.9"
+                                                    stroke-dashoffset="263.9"
+                                                    transform="rotate(-90 50 50)"/>
+                                            </svg>
+                                            <div class="result-ring-center">
+                                                <div id="occupancyPercent" class="text-3xl font-bold font-mono tabular-nums">0%</div>
+                                                <div class="text-gray-600 text-[10px] tracking-widest uppercase mt-0.5">occupied</div>
+                                            </div>
+                                        </div>
+                                        <!-- Linear bar below ring -->
+                                        <div class="w-full h-1.5 bg-dark rounded-full overflow-hidden">
+                                            <div id="occupancyBarFill" class="h-full bg-gradient-to-r from-accent to-emerald-400 rounded-full transition-all duration-1000 ease-[cubic-bezier(0.32,0.72,0,1)]" style="width:0%"></div>
+                                        </div>
+                                    </div>
+                                    <!-- 3 mini stats below -->
+                                    <div class="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/6">
+                                        <div class="text-center">
+                                            <div class="text-gray-600 text-[10px] tracking-wider uppercase mb-1">Total</div>
+                                            <div id="statTotal" class="text-2xl font-bold font-mono tabular-nums">0</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-gray-600 text-[10px] tracking-wider uppercase mb-1">Kosong</div>
+                                            <div id="statEmpty" class="text-2xl font-bold font-mono tabular-nums text-emerald-400">0</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-gray-600 text-[10px] tracking-wider uppercase mb-1">Terisi</div>
+                                            <div id="statOccupied" class="text-2xl font-bold font-mono tabular-nums text-rose-400">0</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse" id="slotsTable">
-                                        <thead>
-                                            <tr class="border-b border-white/8 text-gray-500 text-xs tracking-wider uppercase">
-                                                <th class="pb-3 font-medium">ID</th>
-                                                <th class="pb-3 font-medium">Status</th>
-                                                <th class="pb-3 font-medium">Label</th>
-                                                <th class="pb-3 font-medium">Confidence</th>
-                                                <th class="pb-3 font-medium">Posisi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="slotsTableBody" class="text-sm">
-                                            <!-- Populated via JS -->
-                                        </tbody>
-                                    </table>
+                            </div>
+
+                            <!-- Quick stat: model info -->
+                            <div class="bento-outer">
+                                <div class="bento-inner px-5 py-4 flex items-center gap-4">
+                                    <div class="w-9 h-9 rounded-xl bg-accent/8 border border-accent/20 flex items-center justify-center flex-shrink-0">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-gray-600 text-[10px] tracking-widest uppercase mb-0.5">Model</div>
+                                        <div class="text-white text-sm font-semibold font-mono">YOLOv8 Custom · best.pt</div>
+                                    </div>
+                                    <div class="text-emerald-400 text-xs font-mono font-bold flex-shrink-0">96.4%</div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
+
+                    <!-- Bottom: Slot detail table — full width -->
+                    <div class="bento-outer">
+                        <div class="bento-inner overflow-hidden">
+                            <!-- Table header -->
+                            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 px-6 py-5 border-b border-white/6">
+                                <div>
+                                    <div class="text-sm font-semibold tracking-tight mb-0.5">Detail slot parkir</div>
+                                    <div class="text-gray-600 text-xs font-mono">confidence · bounding box · status per slot</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="filter-btn active result-filter-btn" data-filter="all" id="filterAll">Semua</button>
+                                    <button class="filter-btn result-filter-btn" data-filter="empty" id="filterEmpty">Kosong</button>
+                                    <button class="filter-btn result-filter-btn" data-filter="occupied" id="filterOccupied">Terisi</button>
+                                </div>
+                            </div>
+                            <!-- Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left" id="slotsTable">
+                                    <thead>
+                                        <tr class="result-table-head">
+                                            <th class="result-th">ID</th>
+                                            <th class="result-th">Status</th>
+                                            <th class="result-th">Label</th>
+                                            <th class="result-th">Confidence</th>
+                                            <th class="result-th">Posisi (x·y·w·h)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="slotsTableBody" class="result-tbody">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
