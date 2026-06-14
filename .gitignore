@@ -28,9 +28,15 @@ coverage.xml
 
 # Project specific
 debug.log
+run.log
+*.log
 .agents/
 .codex/
 skills-lock.json
+
+# Model files (large binary, user manages manually)
+*.onnx
+*.pt
 
 # Static results and uploads (temporary/generated files)
 static/results/*

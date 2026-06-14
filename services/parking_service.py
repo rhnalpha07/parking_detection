@@ -29,9 +29,10 @@ if os.name == 'nt' and not os.path.exists(DLL_NAME):
 # ============================================================
 # Konfigurasi ONNX Model
 # ============================================================
-MODEL_PATH   = os.path.join("models", "best_final.onnx")
-CONF_THRESH  = 0.25   # Minimum confidence threshold
-IOU_THRESH   = 0.45   # IoU threshold untuk NMS
+MODEL_PATH   = "best_final.onnx"  # Model di root directory
+CONF_THRESH  = getattr(config, "CONF_THRESH", 0.30)   # Minimum confidence threshold untuk deteksi
+IOU_THRESH   = getattr(config, "IOU_THRESH",  0.45)   # IoU threshold untuk NMS
+OVERLAP_THRESH = getattr(config, "OVERLAP_THRESH", 0.40)  # Conflict suppression overlap ratio
 INPUT_SIZE   = 640    # Ukuran input model (YOLOv8 default: 640x640)
 
 # Mapping class index → nama label (sesuai urutan saat training)
@@ -84,6 +85,41 @@ def _preprocess(frame_bgr: np.ndarray):
     blob = np.expand_dims(blob, axis=0)
 
     return blob, scale, scale, pad_x, pad_y
+
+
+def _resolve_class_conflicts(detections: list) -> list:
+    """
+    Jika ada box 'empty' yang tumpang tindih secara signifikan dengan box 'occupied'
+    (artinya terdeteksi mobil di slot tersebut), hapus box 'empty' tersebut.
+    """
+    occupied_dets = [d for d in detections if d["cls_id"] == 1]
+    empty_dets    = [d for d in detections if d["cls_id"] == 0]
+
+    resolved_empty = []
+    for e_det in empty_dets:
+        e_box = e_det["bbox"]
+        is_suppressed = False
+        for o_det in occupied_dets:
+            o_box = o_det["bbox"]
+
+            # Hitung persentase area 'empty' yang tertutup oleh 'occupied'
+            xA = max(o_box["x1"], e_box["x1"])
+            yA = max(o_box["y1"], e_box["y1"])
+            xB = min(o_box["x2"], e_box["x2"])
+            yB = min(o_box["y2"], e_box["y2"])
+
+            inter_area = max(0, xB - xA) * max(0, yB - yA)
+            empty_area = (e_box["x2"] - e_box["x1"]) * (e_box["y2"] - e_box["y1"])
+
+            if empty_area > 0:
+                overlap_ratio = inter_area / float(empty_area)
+                if overlap_ratio > OVERLAP_THRESH:  # Suppress jika lebih dari 40% area empty tertutup
+                    is_suppressed = True
+                    break
+        if not is_suppressed:
+            resolved_empty.append(e_det)
+
+    return occupied_dets + resolved_empty
 
 
 def _postprocess(output: np.ndarray, scale_x: float, scale_y: float,
@@ -165,7 +201,10 @@ def _postprocess(output: np.ndarray, scale_x: float, scale_y: float,
                 }
             })
 
+    # Saring konflik tumpang tindih antara occupied dan empty
+    detections = _resolve_class_conflicts(detections)
     return detections
+
 
 
 def _run_inference(frame_bgr: np.ndarray):
@@ -178,6 +217,116 @@ def _run_inference(frame_bgr: np.ndarray):
     outputs = session.run([output_name], {input_name: blob})
     detections = _postprocess(outputs[0], sx, sy, px, py, orig_w, orig_h)
     return detections
+
+
+# ============================================================
+# Object Tracking untuk mengurangi flickering
+# ============================================================
+def _compute_iou(boxA, boxB):
+    xA = max(boxA["x1"], boxB["x1"])
+    yA = max(boxA["y1"], boxB["y1"])
+    xB = min(boxA["x2"], boxB["x2"])
+    yB = min(boxA["y2"], boxB["y2"])
+    interArea = max(0, xB - xA) * max(0, yB - yA)
+    boxAArea = boxA["width"] * boxA["height"]
+    boxBArea = boxB["width"] * boxB["height"]
+    if float(boxAArea + boxBArea - interArea) == 0:
+        return 0.0
+    return interArea / float(boxAArea + boxBArea - interArea)
+
+class SimpleIoUTracker:
+    def __init__(self, iou_thresh=0.3, max_disappeared=3, smoothing=0.8):
+        self.next_obj_id = 0
+        self.objects = {}       # id -> det
+        self.disappeared = {}   # id -> count
+        self.iou_thresh = iou_thresh
+        self.max_disappeared = max_disappeared
+        self.smoothing = smoothing # 0 to 1, higher = smoother
+
+    def update(self, detections):
+        if len(detections) == 0:
+            for obj_id in list(self.disappeared.keys()):
+                self.disappeared[obj_id] += 1
+                if self.disappeared[obj_id] > self.max_disappeared:
+                    self.deregister(obj_id)
+            return list(self.objects.values())
+        
+        if len(self.objects) == 0:
+            for i in range(len(detections)):
+                self.register(detections[i])
+            return list(self.objects.values())
+
+        object_ids = list(self.objects.keys())
+        object_dets = list(self.objects.values())
+
+        iou_matrix = np.zeros((len(object_ids), len(detections)))
+        for i, obj_det in enumerate(object_dets):
+            for j, det in enumerate(detections):
+                if obj_det["cls_id"] == det["cls_id"]: # Sama class
+                    iou_matrix[i, j] = _compute_iou(obj_det["bbox"], det["bbox"])
+
+        used_rows = set()
+        used_cols = set()
+
+        # Sort matrix desc for greedy matching
+        for _ in range(min(iou_matrix.shape[0], iou_matrix.shape[1])):
+            idx = np.unravel_index(np.argmax(iou_matrix), iou_matrix.shape)
+            if iou_matrix[idx] < self.iou_thresh:
+                break
+            
+            row, col = idx
+            if row in used_rows or col in used_cols:
+                iou_matrix[row, col] = 0 # invalidate
+                continue
+
+            obj_id = object_ids[row]
+            old_bbox = self.objects[obj_id]["bbox"]
+            new_bbox = detections[col]["bbox"]
+            
+            # Smooth bounding box
+            smoothed_bbox = {
+                "x1": int(old_bbox["x1"] * self.smoothing + new_bbox["x1"] * (1 - self.smoothing)),
+                "y1": int(old_bbox["y1"] * self.smoothing + new_bbox["y1"] * (1 - self.smoothing)),
+                "x2": int(old_bbox["x2"] * self.smoothing + new_bbox["x2"] * (1 - self.smoothing)),
+                "y2": int(old_bbox["y2"] * self.smoothing + new_bbox["y2"] * (1 - self.smoothing)),
+            }
+            smoothed_bbox["width"] = smoothed_bbox["x2"] - smoothed_bbox["x1"]
+            smoothed_bbox["height"] = smoothed_bbox["y2"] - smoothed_bbox["y1"]
+            smoothed_bbox["x"] = smoothed_bbox["x1"] + smoothed_bbox["width"] / 2
+            smoothed_bbox["y"] = smoothed_bbox["y1"] + smoothed_bbox["height"] / 2
+            
+            detections[col]["bbox"] = smoothed_bbox
+            self.objects[obj_id] = detections[col]
+            self.disappeared[obj_id] = 0
+            
+            used_rows.add(row)
+            used_cols.add(col)
+            iou_matrix[row, :] = 0
+            iou_matrix[:, col] = 0
+
+        # Register new objects
+        unused_cols = set(range(iou_matrix.shape[1])).difference(used_cols)
+        for col in unused_cols:
+            self.register(detections[col])
+
+        # Deregister old objects
+        unused_rows = set(range(iou_matrix.shape[0])).difference(used_rows)
+        for row in unused_rows:
+            obj_id = object_ids[row]
+            self.disappeared[obj_id] += 1
+            if self.disappeared[obj_id] > self.max_disappeared:
+                self.deregister(obj_id)
+
+        return list(self.objects.values())
+
+    def register(self, detection):
+        self.objects[self.next_obj_id] = detection
+        self.disappeared[self.next_obj_id] = 0
+        self.next_obj_id += 1
+
+    def deregister(self, obj_id):
+        del self.objects[obj_id]
+        del self.disappeared[obj_id]
 
 
 def _draw_detections(frame_bgr: np.ndarray, detections: list) -> np.ndarray:
@@ -251,9 +400,11 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
     slots          = []
     timeline       = []
 
-    max_processed_frames = 150
+    max_processed_frames = 200
     processed_count = 0
     frame_idx       = 0
+    
+    tracker = SimpleIoUTracker(iou_thresh=0.3, max_disappeared=3, smoothing=0.7)
 
     while cap.isOpened() and processed_count < max_processed_frames:
         ret, frame = cap.read()
@@ -270,6 +421,7 @@ def analyze_video(video_path: str, save_result: bool = True) -> dict:
             frame = cv2.resize(frame, (out_width, out_height))
 
         detections = _run_inference(frame)
+        detections = tracker.update(detections)
 
         current_empty    = 0
         current_occupied = 0

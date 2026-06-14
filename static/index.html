@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,7 @@
     </script>
 
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="/static/css/style.css?v=4">
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
 
     <!-- Three.js (correct jsdelivr path) -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
@@ -139,48 +139,91 @@
                     <p class="text-gray-400 text-lg leading-relaxed">Sistem vision berbasis YOLO yang mengolah setiap frame secara lokal, tanpa mengirim data ke cloud.</p>
                 </div>
 
-                <!-- Bento Grid: 12-col CSS Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
-                    
-                    <!-- Card 1: Large — Real-time Analysis (span 7, row 2) -->
-                    <div class="gsap-reveal bento-outer md:col-span-7 md:row-span-2">
-                        <div class="bento-inner group relative h-full min-h-[380px] md:min-h-[500px] overflow-hidden flex flex-col justify-end p-8 md:p-10">
-                            <img src="/static/img/hero.png?v=4" class="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]" alt="Smart parking lot with detection overlay">
-                            <div class="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent"></div>
-                            <div class="relative z-10">
-                                <div class="text-accent/60 text-xs font-semibold tracking-[0.15em] uppercase mb-3">Real-time</div>
-                                <h3 class="text-3xl md:text-4xl font-bold tracking-tight mb-3 leading-tight">Analysis chamber</h3>
-                                <p class="text-gray-400 max-w-md leading-relaxed">Upload gambar atau video dari area parkir untuk dianalisis oleh backend YOLO lokal kami.</p>
+                <!-- Feature Accordion Panels -->
+                <div class="gsap-reveal feature-accordion" id="featureAccordion">
+
+                    <!-- Panel 1: Upload & Validate -->
+                    <div class="feat-panel feat-panel-active" data-index="0">
+                        <div class="feat-panel-inner">
+                            <div class="feat-panel-label">Upload &amp; Validasi</div>
+                            <div class="feat-panel-content">
+                                <div class="feat-panel-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+                                </div>
+                                <h3 class="feat-panel-title">Upload media, langsung siap dianalisis</h3>
+                                <p class="feat-panel-desc">Drag &amp; drop gambar JPG/PNG atau video MP4/AVI/WEBM. Sistem memvalidasi format, ukuran (maks 100 MB), dan menyimpan sementara dengan UUID unik sebelum inference dimulai.</p>
+                                <div class="feat-panel-pills">
+                                    <span class="feat-pill feat-pill-cyan">JPG · PNG</span>
+                                    <span class="feat-pill feat-pill-violet">MP4 · AVI · WEBM</span>
+                                    <span class="feat-pill feat-pill-slate">Auto-cleanup</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card 2: Slot Classification (span 5) -->
-                    <div class="gsap-reveal bento-outer md:col-span-5">
-                        <div class="bento-inner group relative h-full min-h-[240px] overflow-hidden flex flex-col justify-end p-8">
-                            <img src="/static/img/bento1.png?v=4" class="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]" alt="Parking slot detection with AI bounding boxes">
-                            <div class="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent"></div>
-                            <div class="relative z-10">
-                                <div class="text-emerald-400/60 text-xs font-semibold tracking-[0.15em] uppercase mb-2">Classification</div>
-                                <h3 class="text-2xl font-bold tracking-tight mb-2">Slot classification</h3>
-                                <p class="text-gray-400 text-sm leading-relaxed">Model lokal mengklasifikasikan status setiap slot secara visual.</p>
+                    <!-- Panel 2: YOLO Inference -->
+                    <div class="feat-panel" data-index="1">
+                        <div class="feat-panel-inner">
+                            <div class="feat-panel-label">YOLO Inference</div>
+                            <div class="feat-panel-content">
+                                <div class="feat-panel-icon feat-panel-icon-emerald">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                </div>
+                                <h3 class="feat-panel-title">YOLOv8 ONNX berjalan 100% lokal</h3>
+                                <p class="feat-panel-desc">Model <span class="font-mono text-accent/90">best_final.onnx</span> dijalankan via ONNX Runtime — tanpa PyTorch, tanpa cloud. Setiap frame di-letterbox ke 640×640 lalu melewati inferensi GPU/CPU dengan NMS threshold 0.45 dan confidence minimum 0.45.</p>
+                                <div class="feat-panel-pills">
+                                    <span class="feat-pill feat-pill-emerald">ONNX Runtime</span>
+                                    <span class="feat-pill feat-pill-cyan">GPU / CPU auto</span>
+                                    <span class="feat-pill feat-pill-slate">Conf ≥ 0.45</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card 3: Occupancy Readout (span 5) -->
-                    <div class="gsap-reveal bento-outer md:col-span-5">
-                        <div class="bento-inner group relative h-full min-h-[240px] overflow-hidden flex flex-col justify-end p-8">
-                            <img src="/static/img/bento2.png?v=4" class="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]" alt="Parking occupancy dashboard readout">
-                            <div class="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent"></div>
-                            <div class="relative z-10">
-                                <div class="text-rose-400/60 text-xs font-semibold tracking-[0.15em] uppercase mb-2">Readout</div>
-                                <h3 class="text-2xl font-bold tracking-tight mb-2">Occupancy readout</h3>
-                                <p class="text-gray-400 text-sm leading-relaxed">Hasil ditampilkan sebagai statistik dan anotasi visual.</p>
+                    <!-- Panel 3: Output & Dashboard -->
+                    <div class="feat-panel" data-index="2">
+                        <div class="feat-panel-inner">
+                            <div class="feat-panel-label">Output &amp; Dashboard</div>
+                            <div class="feat-panel-content">
+                                <div class="feat-panel-icon feat-panel-icon-rose">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7M17.5 14v7"/></svg>
+                                </div>
+                                <h3 class="feat-panel-title">Dashboard real-time dengan timeline video</h3>
+                                <p class="feat-panel-desc">Hasil anotasi OpenCV disertai ring gauge okupansi, tabel slot per frame, dan timeline sync saat memutar video — statistik berubah otomatis seiring posisi playback tanpa reload.</p>
+                                <div class="feat-panel-pills">
+                                    <span class="feat-pill feat-pill-rose">Ring gauge</span>
+                                    <span class="feat-pill feat-pill-emerald">Timeline sync</span>
+                                    <span class="feat-pill feat-pill-slate">OpenCV annotated</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                </div>
+
+                <!-- Stat counter strip -->
+                <div class="gsap-reveal stat-strip mt-5">
+                    <div class="stat-strip-inner">
+                        <div class="stat-strip-item">
+                            <div class="stat-strip-num">96.4<span class="stat-strip-unit">%</span></div>
+                            <div class="stat-strip-label">Model accuracy</div>
+                        </div>
+                        <div class="stat-strip-divider"></div>
+                        <div class="stat-strip-item">
+                            <div class="stat-strip-num">200<span class="stat-strip-unit">f</span></div>
+                            <div class="stat-strip-label">Max frames / video</div>
+                        </div>
+                        <div class="stat-strip-divider"></div>
+                        <div class="stat-strip-item">
+                            <div class="stat-strip-num">640<span class="stat-strip-unit">px</span></div>
+                            <div class="stat-strip-label">Input resolution</div>
+                        </div>
+                        <div class="stat-strip-divider"></div>
+                        <div class="stat-strip-item">
+                            <div class="stat-strip-num">0<span class="stat-strip-unit">ms</span></div>
+                            <div class="stat-strip-label">Cloud latency</div>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -267,7 +310,7 @@
                                 </div>
                                 <div class="arch-layer arch-layer-yolo">
                                     <div class="arch-layer-label">YOLOv8 Engine</div>
-                                    <div class="arch-layer-tags"><span class="arch-tag arch-tag-core">parking_service.py</span><span class="arch-tag arch-tag-core">best.pt</span><span class="arch-tag arch-tag-core">GPU / CPU</span></div>
+                                    <div class="arch-layer-tags"><span class="arch-tag arch-tag-core">parking_service.py</span><span class="arch-tag arch-tag-core">best_final.onnx</span><span class="arch-tag arch-tag-core">SimpleIoUTracker</span></div>
                                 </div>
                                 <div class="arch-arrow">
                                     <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><path d="M8 0 V22" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/><path d="M3 18 L8 26 L13 18" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>
@@ -299,7 +342,7 @@
                                 <div class="stack-row stack-row-last"><div class="stack-dot stack-dot-cv-4"></div><span class="stack-lib">PyTorch</span><span class="stack-desc">inference backend GPU/CPU</span></div>
                             </div>
                             <div class="mt-6 pt-5 border-t border-white/6 flex items-center gap-3">
-                                <span class="text-xs font-mono text-gray-600">best.pt</span>
+                                <span class="text-xs font-mono text-gray-600">best_final.onnx</span>
                                 <span class="text-white/10">·</span>
                                 <span class="text-xs font-mono text-emerald-400/70">~96.4% acc.</span>
                             </div>
@@ -349,7 +392,7 @@
                                 <div class="tree-folder">parking_api_updated_v1/</div>
                                 <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">app.py</span><span class="tree-comment">entry point Flask</span></div>
                                 <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">config.py</span><span class="tree-comment">label &amp; folder config</span></div>
-                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">best.pt</span><span class="tree-comment">model weights YOLOv8</span></div>
+                                <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-file">best_final.onnx</span><span class="tree-comment">model weights YOLOv8</span></div>
                                 <div class="tree-row"><span class="tree-prefix">├──</span><span class="tree-dir">routes/</span></div>
                                 <div class="tree-row tree-indent"><span class="tree-prefix">├──</span><span class="tree-file">detect.py</span><span class="tree-comment">POST /api/detect</span></div>
                                 <div class="tree-row tree-indent"><span class="tree-prefix">└──</span><span class="tree-file">status.py</span><span class="tree-comment">GET /api/health</span></div>
@@ -382,7 +425,7 @@
                                     <div class="spec-divide-row"><span class="spec-divide-label">Model</span><span class="spec-divide-value">YOLOv8 Custom</span></div>
                                     <div class="spec-divide-row"><span class="spec-divide-label">Akurasi</span><span class="spec-divide-value text-emerald-400">~96.4%</span></div>
                                     <div class="spec-divide-row"><span class="spec-divide-label">Max file size</span><span class="spec-divide-value">100 MB</span></div>
-                                    <div class="spec-divide-row"><span class="spec-divide-label">Video processing</span><span class="spec-divide-value">~10 FPS · 150 frames max</span></div>
+                                    <div class="spec-divide-row"><span class="spec-divide-label">Video processing</span><span class="spec-divide-value">~10 FPS · 200 frames max</span></div>
                                     <div class="spec-divide-row"><span class="spec-divide-label">Hardware</span><span class="spec-divide-value text-accent">GPU / CPU (auto-detect)</span></div>
                                     <div class="spec-divide-row"><span class="spec-divide-label">Output format</span><span class="spec-divide-value">JPEG · MP4 (H.264)</span></div>
                                 </div>
@@ -558,7 +601,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-gray-600 text-[10px] tracking-widest uppercase mb-0.5">Model</div>
-                                        <div class="text-white text-sm font-semibold font-mono">YOLOv8 Custom · best.pt</div>
+                                        <div class="text-white text-sm font-semibold font-mono">YOLOv8 Custom · best_final.onnx</div>
                                     </div>
                                     <div class="text-emerald-400 text-xs font-mono font-bold flex-shrink-0">96.4%</div>
                                 </div>
@@ -649,7 +692,7 @@
 
     </main>
 
-    <script src="/static/js/hero3d.js?v=4"></script>
-    <script src="/static/js/app.js?v=4"></script>
+    <script src="/static/js/hero3d.js?v=5"></script>
+    <script src="/static/js/app.js?v=5"></script>
 </body>
 </html>

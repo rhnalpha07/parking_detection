@@ -1,136 +1,241 @@
-# ParkVision — Intelligent Parking Infrastructure
+﻿# ParkVision — Parking Detection API
 
-![ParkVision Banner](https://img.shields.io/badge/UI%2FUX-Agency_Premium-00e5ff?style=for-the-badge) ![YOLOv8](https://img.shields.io/badge/YOLO-v8-yellow?style=for-the-badge&logo=yolo) ![Flask](https://img.shields.io/badge/Backend-Flask-black?style=for-the-badge&logo=flask) ![GSAP](https://img.shields.io/badge/Motion-GSAP-88CE02?style=for-the-badge)
-
-ParkVision adalah sistem cerdas untuk mendeteksi ketersediaan slot parkir secara real-time dari media gambar maupun video. Menggabungkan ketangguhan model **YOLOv8** di sisi *backend* (Flask) dengan antarmuka web berstandar **High-End Agency ($150k+ build)**.
-
-Dokumentasi ini ditulis agar tim pengembang dapat dengan mudah melakukan kloning, menjalankan, serta mengembangkan aplikasi tanpa hambatan teknis.
+Sistem deteksi slot parkir berbasis **YOLOv8 ONNX** dengan REST API Flask dan Web UI interaktif.
+Model mendeteksi dua kelas: **empty** (slot kosong) dan **occupied** (slot terisi kendaraan).
 
 ---
 
-## ✨ Fitur & Arsitektur Visual
+## Fitur
 
-Sistem ini didesain tidak hanya sekadar fungsional, tetapi mematuhi standar *Awwwards-Tier Design Engineering*:
-
-- **Premium Dark-Tech UI**: Antarmuka futuristik dengan palet *deep OLED black*, efek *glassmorphism* tingkat lanjut, dan tipografi *variable-width* yang tajam.
-- **Asymmetrical Bento Dashboard (7/5 Split)**: Hasil deteksi tidak ditampilkan secara kaku. Dashboard terbagi menjadi *viewport* media yang mendominasi (7-kolom) disandingkan dengan *live stats sidebar* (5-kolom).
-- **Live Occupancy Ring Gauge**: Visualisasi tingkat keterisian parkir (okupansi) yang dinamis menggunakan *SVG stroke-dashoffset* animasi dan indikator warna adaptif (Hijau/Kuning/Merah).
-- **Haptic Micro-interactions**: Menggunakan animasi berbasis kurva *cubic-bezier* khusus (`0.32, 0.72, 0, 1`) yang mensimulasikan hukum fisika (berat/massa) pada setiap interaksi *button hover*, nav-reveal, dan unggah file.
-- **Deteksi Video Teroptimasi**: Pemrosesan *frame-by-frame* pintar via YOLOv8 (maks 150 frame, ~10 FPS) dengan *output* MP4 kompatibel (H.264).
-
----
-
-## 🛠️ Tech Stack
-
-### 🧠 Computer Vision & Backend
-- **Ultralytics YOLOv8** (Custom Model `best.pt`)
-- **Python 3.9+** & **Flask** (API & Routing)
-- **OpenCV (Headless)** (Anotasi Bounding Box)
-
-### 🎨 Frontend & Motion
-- **HTML5 & Vanilla CSS** (Zero framework bloat, performa *hardware-accelerated*)
-- **GSAP (GreenSock)** (ScrollTriggers & koreografi animasi fluid)
-- **Three.js** (Efek 3D *Tilt* Interaktif di Hero Section)
+- Upload gambar & video parkiran (JPG/PNG/MP4/AVI/WEBM)
+- Inferensi via ONNX Runtime — cepat, tanpa PyTorch runtime di server
+- Dashboard real-time: total slot, empty, occupied, occupancy rate
+- Timeline video sync — statistik otomatis update mengikuti pemutaran video
+- Conflict resolution: deteksi ganda empty+occupied pada slot sama otomatis diselesaikan
+- Object tracking dengan bounding box smoothing antar frame
+- Output gambar/video teranotasi (bounding box + label + confidence)
 
 ---
 
-## 🚀 Cara Instalasi (Local Development)
+## Struktur Proyek
 
-### 1. Kloning Repositori
-Pastikan Anda berada di direktori *workspace* yang tepat, lalu eksekusi:
-```bash
-git clone https://github.com/rhnalpha07/parking_detection.git
-cd parking_detection
-```
-
-### 2. Persiapan Dependensi
-Sangat disarankan menggunakan *virtual environment* (`venv`). Install seluruh dependensi yang dibutuhkan:
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Akselerasi GPU (Untuk Pengguna NVIDIA - Opsional tapi Direkomendasikan)
-Secara bawaan, instalasi *requirements* memuat PyTorch versi CPU. Jika Anda memproses video, kecepatan akan meningkat drastis dengan versi CUDA:
-```bash
-pip uninstall torch torchvision torchaudio -y
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-
-### 4. Menjalankan Server
-Pastikan model kustom Anda (`best.pt`) sudah berada di dalam folder *root*. Jalankan server *development*:
-```bash
-python app.py
-```
-Akses antarmuka melalui peramban: **[http://localhost:5000](http://localhost:5000)**
-
----
-
-## 📂 Struktur Proyek
-
-```text
-parking_detection/
-├── app.py                         # Entry point Flask (Routing utama)
-├── config.py                      # Konfigurasi parameter & rules direktori
-├── best.pt                        # ⚠️ WAJIB: Weights dari YOLOv8 Model
-├── requirements.txt               # Dependencies
+`
+parking_api_updated_v1/
+│
+├── app.py                  # Entry point Flask
+├── config.py               # Konfigurasi global (threshold, folder, label)
+├── requirements.txt        # Dependensi Python
+├── best_final.onnx         # Model aktif — letakkan di sini (root directory)
+│
 ├── routes/
-│   ├── detect.py                  # Endpoint POST /api/detect (Inferensi AI)
-│   └── status.py                  # Endpoint GET /api/health (Ping server)
+│   ├── detect.py           # POST /api/detect
+│   └── status.py           # GET /api/health, GET /api/
+│
 ├── services/
-│   └── parking_service.py         # Inti logika OpenCV & deteksi YOLOv8
+│   └── parking_service.py  # Core: ONNX inference, tracking, video processing
+│
 ├── utils/
-│   ├── file_helper.py             # I/O Helper & validasi ekstensi media
-│   └── response_helper.py         # Standardisasi JSON API response
-└── static/                        # Frontend Assets
-    ├── index.html                 # Struktur markup High-End UI
-    ├── css/style.css              # Styling (Double-Bezel, Bento Grid, Ring Gauge)
+│   ├── file_helper.py      # Upload handler & cleanup
+│   └── response_helper.py  # Format JSON response
+│
+└── static/
+    ├── index.html          # Web UI (ParkVision frontend)
+    ├── css/                # Stylesheet
     ├── js/
-    │   ├── app.js                 # Integrasi API, logika upload & GSAP
-    │   └── hero3d.js              # Three.js canvas setup
-    ├── img/                       # Aset statis & background
-    ├── uploads/                   # (Git Ignored) Buffer unggahan user
-    └── results/                   # (Git Ignored) Hasil rendering AI
-```
+    │   ├── app.js          # Frontend: upload, API call, dashboard, GSAP animations
+    │   └── hero3d.js       # Animasi 3D hero section (Three.js)
+    ├── libs/               # Library frontend (GSAP, Three.js)
+    ├── uploads/            # Temporary upload — auto cleanup setelah proses
+    └── results/            # Hasil anotasi gambar/video
+`
 
 ---
 
-## 📡 API Endpoints
+## Instalasi
 
-Aplikasi mengekspos API yang dapat dikonsumsi oleh *client* eksternal:
+### Prasyarat
+- Python 3.9+
 
-| Method | Endpoint | Fungsi | Payload |
-| :--- | :--- | :--- | :--- |
-| **GET** | `/api/health` | Cek status server (dipakai indikator UI) | *None* |
-| **POST** | `/api/detect` | Mengirim media untuk dianalisis model | `form-data` (`image`: file) |
+### Setup
 
-**Contoh Response Sukses (`/api/detect`)**:
-```json
+`ash
+# Clone repository
+git clone https://github.com/rhnalpha07/parking_detection.git
+cd parking_api_updated_v1
+
+# Buat virtual environment
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Linux/macOS
+
+# Install dependensi
+pip install -r requirements.txt
+
+# Letakkan model di ROOT directory (sejajar app.py)
+# Salin best_final.onnx ke: parking_api_updated_v1/best_final.onnx
+`
+
+### Jalankan Server
+
+`ash
+python app.py
+`
+
+Akses di: **http://localhost:5000**
+
+---
+
+## Dependensi
+
+| Package | Versi | Kegunaan |
+|---|---|---|
+| lask | 3.0.3 | Web framework & API server |
+| lask-cors | 4.0.1 | CORS support untuk frontend |
+| opencv-python-headless | 4.10.0.84 | Pemrosesan gambar & video, NMS |
+| onnxruntime | latest | Inferensi model ONNX |
+| 
+umpy | latest | Operasi array & preprocessing |
+
+---
+
+## API Reference
+
+### GET /api/health
+
+Cek status API dan model.
+
+**Response:**
+`json
 {
   "status": "success",
+  "message": "API berjalan dengan baik.",
   "data": {
-    "total_slots": 12,
-    "empty": 4,
-    "occupied": 8,
-    "occupancy_rate": 66.7,
+    "api": "Parking Detection API",
+    "version": "1.0.0",
+    "model": "local_yolo_v8"
+  }
+}
+`
+
+---
+
+### POST /api/detect
+
+Deteksi slot parkir dari gambar atau video.
+
+**Request (multipart/form-data):**
+
+| Field | Type | Keterangan |
+|---|---|---|
+| image | ile | Gambar (JPG/PNG) atau video (MP4/AVI/WEBM/MOV/MKV) — **wajib** |
+| save_result | string | "true" / "false" — simpan hasil anotasi (default: "true") |
+
+**Response (gambar):**
+`json
+{
+  "status": "success",
+  "message": "Deteksi parkiran berhasil.",
+  "data": {
+    "total_slots": 20,
+    "empty": 8,
+    "occupied": 12,
+    "occupancy_rate": 60.0,
+    "is_video": false,
+    "result_image": "/static/results/result_abc123.jpg",
     "slots": [
       {
         "slot_id": 1,
         "status": "occupied",
-        "confidence": 0.94,
-        "bbox": { "x1": 75, "y1": 62, "x2": 125, "y2": 97 }
+        "label": "occupied",
+        "confidence": 0.9231,
+        "bbox": {
+          "x": 145.5, "y": 89.3,
+          "width": 120.0, "height": 80.0,
+          "x1": 85, "y1": 49, "x2": 205, "y2": 129
+        }
       }
-    ],
-    "result_image": "/static/results/result_8aef92a1.jpg",
-    "is_video": false
+    ]
   }
 }
-```
+`
+
+**Response (video)** — sama seperti gambar, ditambah field 	imeline:
+`json
+{
+  "data": {
+    "is_video": true,
+    "result_image": "/static/results/result_xyz.mp4",
+    "timeline": [
+      {
+        "time": 0.0,
+        "empty": 8,
+        "occupied": 12,
+        "total_slots": 20,
+        "occupancy_rate": 60.0,
+        "slots": [...]
+      }
+    ]
+  }
+}
+`
 
 ---
 
-## 🤝 Catatan Pengembangan (Dev Notes)
-- Repositori ini menerapkan `.gitignore` yang sangat ketat. Folder `uploads/`, `results/`, dan *cache files* (`__pycache__`) tidak akan masuk ke dalam repositori demi menjaga *history* tetap bersih.
-- Komponen visual UI dibangun **tanpa** *framework CSS utility* raksasa seperti Tailwind, melainkan dengan CSS murni agar abstraksi visual tingkat tinggi seperti `backdrop-filter`, *concentric border radii*, dan masking animasi dapat dimanipulasi per *pixel*.
+## Konfigurasi Threshold
+
+Semua threshold dikonfigurasi di config.py:
+
+| Parameter | Nilai | Penjelasan |
+|---|---|---|
+| CONF_THRESH | **0.45** | Confidence minimum — sudah di-tune untuk est_final.onnx. Cukup tinggi untuk menekan false positive tanpa melewatkan deteksi valid. |
+| IOU_THRESH | **0.45** | IoU threshold untuk Non-Maximum Suppression — optimal untuk slot parkir yang berdekatan. |
+| OVERLAP_THRESH | **0.40** | Jika >=40% area box empty tertutup box occupied, box empty dihapus (conflict resolution). |
+
+### Parameter Video Processing (parking_service.py)
+
+| Parameter | Nilai | Penjelasan |
+|---|---|---|
+| max_processed_frames | **200** | Maksimal frame yang diproses per video |
+| process_every_n_frames | ps // 10 | Proses ~10 frame/detik untuk efisiensi |
+| Tracker iou_thresh | **0.3** | IoU minimum untuk matching objek antar frame |
+| Tracker max_disappeared | **3** | Frame maksimal objek hilang sebelum di-deregister |
+| Tracker smoothing | **0.7** | Faktor smoothing bbox (0=tidak smooth, 1=freeze) |
 
 ---
-*Developed with focus on privacy — inference runs 100% locally.*
+
+## Model
+
+| Properti | Detail |
+|---|---|
+| **File** | est_final.onnx (di root directory) |
+| **Arsitektur** | YOLOv8 |
+| **Input size** | 640x640 px |
+| **Input format** | RGB float32 [0,1], shape [1, 3, 640, 640] |
+| **Output format** | [1, 6, 8400] — cx, cy, w, h, conf_empty, conf_occupied |
+| **Classes** | 0: empty, 1: occupied |
+| **Preprocessing** | Letterbox resize + padding warna (114,114,114) |
+
+---
+
+## Format File yang Didukung
+
+| Tipe | Ekstensi |
+|---|---|
+| Gambar | .jpg, .jpeg, .png |
+| Video | .mp4, .avi, .mov, .mkv, .webm |
+| Ukuran maksimal | 100 MB |
+
+---
+
+## Catatan Deployment
+
+- Model est_final.onnx **harus ada di root directory** (sejajar pp.py)
+- Folder static/uploads/ dan static/results/ dibuat otomatis jika belum ada
+- File upload dihapus otomatis setelah diproses
+- **Windows**: openh264-1.8.0-win64.dll otomatis didownload jika belum ada — diperlukan untuk output video H.264 yang kompatibel dengan browser
+- **GPU inference**: install onnxruntime-gpu + pastikan CUDA tersedia; fallback ke CPU otomatis
+
+---
+
+*Proyek akademik — Mata Kuliah Pengolahan Citra Digital, Semester 6.*
+*Inference berjalan 100% lokal — tidak ada data yang dikirim ke server eksternal.*

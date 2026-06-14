@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupFilters();
   setupLightbox();
   setupVideoTimelineSync();
+  setupFeatureAccordion();
 });
 
 /* ═══════════════════════════════════════
@@ -546,5 +547,21 @@ function setupVideoTimelineSync() {
       updateDashboardData(currentData, false);
       lastRenderedTime = currentData.time;
     }
+  });
+}
+
+/* ═══════════════════════════════════════
+   Feature Accordion
+   ═══════════════════════════════════════ */
+function setupFeatureAccordion() {
+  var panels = document.querySelectorAll(".feat-panel");
+  if (!panels.length) return;
+
+  panels.forEach(function (panel) {
+    panel.addEventListener("click", function () {
+      if (panel.classList.contains("feat-panel-active")) return;
+      panels.forEach(function (p) { p.classList.remove("feat-panel-active"); });
+      panel.classList.add("feat-panel-active");
+    });
   });
 }
